@@ -1,8 +1,8 @@
-# [Sendbird](https://sendbird.com) Chat SDK for .NET
+# [Sendbird](https://sendbird.com) Chat SDK for Unity
 
 [![Platform](https://img.shields.io/badge/platform-Unity-orange.svg)](#)
 [![Languages](https://img.shields.io/badge/language-C%23-orange.svg)](#)
-[![Commercial License](https://img.shields.io/badge/license-Commercial-brightgreen.svg)](https://github.com/sendbird/SendBird-SDK-dotNET/blob/master/LICENSE.md)
+[![Commercial License](https://img.shields.io/badge/license-Commercial-brightgreen.svg)](https://github.com/sendbird/sendbird-chat-sdk-unity/blob/master/LICENSE)
 
 ## Table of contents
 
@@ -70,7 +70,7 @@ SendBirdClient.Init(APP_ID);
 
 ### Step 2: Connect to Sendbird server
 
-Apart from initialization or use of the `Init()` method, your client app must always be connected to Sendbird server before calling any methods. If you attempt to call a method without connecting, a [`ERR_CONNECTION_REQUIRED (800101)`](https://sendbird.com/docs/chat/v3/dotnet/guides/error-codes) error would return.
+Apart from initialization or use of the `Init()` method, your client app must always be connected to Sendbird server before calling any methods. If you attempt to call a method without connecting, a [`ERR_CONNECTION_REQUIRED (800101)`](https://sendbird.com/docs/chat/v3/unity/guides/error-codes) error would return.
 
 Connect a user to Sendbird server using a unique user ID or in combination with an access token. Sendbird prefers the latter method, as it ensures privacy with the user, but the former method is useful during the developmental phase or if your service doesn't require additional security.
 
