@@ -50,7 +50,7 @@ Regardless of the platform, only one Sendbird application can be integrated per 
 
 ### Step 2: Download the latest Chat SDK
 
-- https://github.com/sendbird/sendbird-chat-sample-unity
+- https://github.com/sendbird/sendbird-chat-sdk-unity
 
 ## Send your first message
 
