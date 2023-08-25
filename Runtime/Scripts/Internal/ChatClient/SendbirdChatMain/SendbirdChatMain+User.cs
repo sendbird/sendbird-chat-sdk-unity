@@ -8,7 +8,7 @@ namespace Sendbird.Chat
 {
     internal partial class SendbirdChatMain
     {
-        internal void AddUseEventHandler(string inIdentifier, SbUserEventHandler inUserEventHandler)
+        internal void AddUserEventHandler(string inIdentifier, SbUserEventHandler inUserEventHandler)
         {
             if (string.IsNullOrEmpty(inIdentifier) || inUserEventHandler == null)
             {

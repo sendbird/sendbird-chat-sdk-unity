@@ -182,9 +182,9 @@ namespace Sendbird.Chat
         /// <param name="inIdentifier"></param>
         /// <param name="inUserEventHandler"></param>
         /// @since 4.0.0
-        public static void AddUseEventHandler(string inIdentifier, SbUserEventHandler inUserEventHandler)
+        public static void AddUserEventHandler(string inIdentifier, SbUserEventHandler inUserEventHandler)
         {
-            _sendbirdChatClient.AddUseEventHandler(inIdentifier, inUserEventHandler);
+            _sendbirdChatClient.AddUserEventHandler(inIdentifier, inUserEventHandler);
         }
 
         /// <summary>

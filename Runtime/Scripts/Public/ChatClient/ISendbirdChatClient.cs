@@ -152,7 +152,7 @@ namespace Sendbird.Chat
         /// <param name="inIdentifier"></param>
         /// <param name="inUserEventHandler"></param>
         /// @since 4.0.0
-        void AddUseEventHandler(string inIdentifier, SbUserEventHandler inUserEventHandler);
+        void AddUserEventHandler(string inIdentifier, SbUserEventHandler inUserEventHandler);
 
         /// <summary>
         /// Removes a user event handler. The deleted handler no longer be notified.
