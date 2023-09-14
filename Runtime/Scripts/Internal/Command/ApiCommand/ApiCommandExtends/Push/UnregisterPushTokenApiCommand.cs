@@ -3,6 +3,7 @@
 // 
 
 using System;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -13,6 +14,8 @@ namespace Sendbird.Chat
         {
             internal Request(string inUserId, SbPushTokenType inTokenType, string inToken, ResultHandler inResultHandler)
             {
+                inUserId = HttpUtility.UrlEncode(inUserId);
+                inToken = HttpUtility.UrlEncode(inToken);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/push/{inTokenType.ToJsonName()}/{inToken}";
                 ResponseType = typeof(Response);
                 resultHandler = inResultHandler;

@@ -76,13 +76,13 @@ namespace Sendbird.Chat
 
                 if (Logger.InternalLogLevel < InternalLogLevel.Info)
                 {
-                    string encodedString = null;
+                    string encodedStringForLog = null;
                     if (webRequest.uploadHandler != null)
                     {
-                        encodedString = Encoding.UTF8.GetString(webRequest.uploadHandler.data);
+                        encodedStringForLog = Encoding.UTF8.GetString(webRequest.uploadHandler.data);
                     }
 
-                    Logger.Verbose(Logger.CategoryType.Http, $"UnityHttpClient::RequestCoroutine uri:{_uriStringBuilder}\n encodedString:{encodedString}");
+                    Logger.Verbose(Logger.CategoryType.Http, $"UnityHttpClient::RequestCoroutine uri:{_uriStringBuilder}\n string:{encodedStringForLog}");
                 }
                 else
                 {

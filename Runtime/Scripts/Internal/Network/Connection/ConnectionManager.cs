@@ -82,9 +82,8 @@ namespace Sendbird.Chat
             {
                 inWsHost = NetworkConfig.GetDefaultWsHost(_chatMainContextRef.ApplicationId);
             }
-
-            string webSocketUri = CreateWebSocketUri(inWsHost, inUserId, inAuthToken);
-            if (string.IsNullOrEmpty(webSocketUri))
+            
+            if (string.IsNullOrEmpty(inWsHost))
             {
                 SbError error = SbErrorCodeExtension.CreateInvalidParameterError("WebSocketUri");
                 Logger.Error(Logger.CategoryType.Connection, $"ConnectionManager::Connect {error.ErrorMessage}");
@@ -96,7 +95,7 @@ namespace Sendbird.Chat
             int timeoutDuration = _chatMainContextRef.NetworkConfig.ConnectionTimeout + _chatMainContextRef.NetworkConfig.WebsocketResponseTimeout;
             _connectionManagerContext.SetConnectionTimeoutDuration(timeoutDuration);
 
-            _currentState.Connect(webSocketUri, inUserId, inAuthToken, inCompletionHandler, timeoutDuration);
+            _currentState.Connect(inWsHost, inUserId, inAuthToken, inCompletionHandler, timeoutDuration);
         }
 
         internal bool Reconnect()

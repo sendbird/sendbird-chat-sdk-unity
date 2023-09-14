@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -22,6 +23,7 @@ namespace Sendbird.Chat
 
             internal Request(string inUserId, Dictionary<string, string> inMetaData, ResultHandler inResultHandler)
             {
+                inUserId = HttpUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/metadata";
 
                 ResponseType = typeof(Response);

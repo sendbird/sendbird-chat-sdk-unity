@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -14,6 +15,7 @@ namespace Sendbird.Chat
         {
             internal Request(string inToken, int inLimit, string inChannelUrl, ResultHandler inResultHandler)
             {
+                inChannelUrl = HttpUtility.UrlEncode(inChannelUrl);
                 Url = $"{ChannelTypeToUrlPrefix(SbChannelType.Open)}/{inChannelUrl}/participants";    
                 
                 ResponseType = typeof(Response);

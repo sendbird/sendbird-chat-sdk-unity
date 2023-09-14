@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Web;
 
 namespace Sendbird.Chat
 {
@@ -15,6 +15,7 @@ namespace Sendbird.Chat
         {
             internal Request(string inUserId, List<SbUnreadItemKey> inItemKeys, ResultHandler inResultHandler)
             {
+                inUserId = HttpUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/unread_item_count";
 
                 ResponseType = typeof(Response);

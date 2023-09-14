@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -14,6 +15,7 @@ namespace Sendbird.Chat
         {
             internal Request(string inUserId, List<string> inCustomTypes, SbGroupChannelSuperChannelFilter inSuperChannelFilter, ResultHandler inResultHandler)
             {
+                inUserId = HttpUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/unread_channel_count";
 
                 ResponseType = typeof(Response);

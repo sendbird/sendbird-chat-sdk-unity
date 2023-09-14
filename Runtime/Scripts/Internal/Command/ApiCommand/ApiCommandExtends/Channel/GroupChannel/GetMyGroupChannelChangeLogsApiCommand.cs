@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -14,6 +15,7 @@ namespace Sendbird.Chat
         {
             internal Request(string inUserId, string inToken, long? inTimestamp, SbGroupChannelChangeLogsParams inParams, int inLimit, ResultHandler inResultHandler)
             {
+                inUserId = HttpUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/my_group_channels/changelogs";
                 ResponseType = typeof(Response);
                 resultHandler = inResultHandler;
