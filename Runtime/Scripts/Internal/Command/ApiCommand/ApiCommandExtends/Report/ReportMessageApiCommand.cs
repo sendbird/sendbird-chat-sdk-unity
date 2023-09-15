@@ -3,6 +3,7 @@
 // 
 
 using System;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -25,6 +26,8 @@ namespace Sendbird.Chat
             internal Request(string inChannelUrl, SbChannelType inChannelType, string inOffendingUserId, long inMessageId,
                              SbReportCategory inReportCategory, string inReporterId, string inDescription, ResultHandler inResultHandler)
             {
+                inChannelUrl = HttpUtility.UrlEncode(inChannelUrl);
+                
                 if (inChannelType == SbChannelType.Open)
                 {
                     Url = $"{REPORT_PREFIX_URL}/{OPEN_CHANNELS_URL_NAME}/{inChannelUrl}/messages/{inMessageId}";    

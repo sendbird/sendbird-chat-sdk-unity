@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Web;
 using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
@@ -377,13 +378,13 @@ namespace Sendbird.Chat
             StringBuilder uriStringBuilder = new StringBuilder(inWebSocketHostUrl);
             {
                 uriStringBuilder.Append($"/?p={_chatMainContextRef.PlatformName}");
-                uriStringBuilder.Append($"&user_id={inUserId}");
+                uriStringBuilder.Append($"&user_id={HttpUtility.UrlEncode(inUserId)}");
 
                 if (string.IsNullOrEmpty(inAuthToken) == false)
-                    uriStringBuilder.Append($"&access_token={inAuthToken}");
+                    uriStringBuilder.Append($"&access_token={HttpUtility.UrlEncode(inAuthToken)}");
 
                 if (string.IsNullOrEmpty(inSessionKey) == false)
-                    uriStringBuilder.Append($"&key={inSessionKey}");
+                    uriStringBuilder.Append($"&key={HttpUtility.UrlEncode(inSessionKey)}");
 
                 if (_chatMainContextRef.SessionManager != null && _chatMainContextRef.SessionManager.HasSessionHandler())
                     uriStringBuilder.Append("&expiring_session=1");
@@ -391,10 +392,10 @@ namespace Sendbird.Chat
                 if (_chatMainContextRef.UserLocalCache)
                     uriStringBuilder.Append("&use_local_cache=1");
 
-                uriStringBuilder.Append($"&pv={_chatMainContextRef.PlatformVersion}");
-                uriStringBuilder.Append($"&ai={_chatMainContextRef.ApplicationId}");
-                uriStringBuilder.Append($"&av={_chatMainContextRef.CustomerAppVersion}");
-                uriStringBuilder.Append($"&o={_chatMainContextRef.OsName}");
+                uriStringBuilder.Append($"&pv={HttpUtility.UrlEncode(_chatMainContextRef.PlatformVersion)}");
+                uriStringBuilder.Append($"&ai={HttpUtility.UrlEncode(_chatMainContextRef.ApplicationId)}");
+                uriStringBuilder.Append($"&av={HttpUtility.UrlEncode(_chatMainContextRef.CustomerAppVersion)}");
+                uriStringBuilder.Append($"&o={HttpUtility.UrlEncode(_chatMainContextRef.OsName)}");
                 uriStringBuilder.Append("&include_extra_data=premium_feature_list,file_upload_size_limit,application_attributes,emoji_hash");
                 uriStringBuilder.Append($"&{ConnectionHeaders.SB_USER_AGENT.Name}={ConnectionHeaders.SB_USER_AGENT.Value}");
                 uriStringBuilder.Append($"&{ConnectionHeaders.SB_SDK_USER_AGENT.Name}={ConnectionHeaders.SB_SDK_USER_AGENT.Value}");

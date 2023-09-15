@@ -3,6 +3,7 @@
 // 
 
 using System;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -21,6 +22,7 @@ namespace Sendbird.Chat
 
             internal Request(string inUserId, string inName, ResultHandler inResultHandler)
             {
+                inUserId = HttpUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/push/template";
                 resultHandler = inResultHandler;
 

@@ -3,6 +3,7 @@
 // 
 
 using System;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -22,6 +23,7 @@ namespace Sendbird.Chat
 
             internal Request(string inChannelUrl, string inUserId, string inAccessCode, ResultHandler inResultHandler)
             {
+                inChannelUrl = HttpUtility.UrlEncode(inChannelUrl);
                 Url = $"{ChannelTypeToUrlPrefix(SbChannelType.Group)}/{inChannelUrl}/accept";
                 resultHandler = inResultHandler;
 

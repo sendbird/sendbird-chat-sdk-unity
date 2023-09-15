@@ -3,6 +3,7 @@
 // 
 
 using System;
+using System.Web;
 
 namespace Sendbird.Chat
 {
@@ -18,6 +19,7 @@ namespace Sendbird.Chat
                     return;
                 }
 
+                inParams.ChannelUrl = HttpUtility.UrlEncode(inParams.ChannelUrl);
                 Url = $"{ChannelTypeToUrlPrefix(inParams.ChannelType)}/{inParams.ChannelUrl}/messages/{inParams.MessageId}";
                 ResponseType = typeof(Response);
                 resultHandler = inResultHandler;

@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.Serialization;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -22,6 +23,7 @@ namespace Sendbird.Chat
 
             internal Request(string inAppId, string inUserId, string inAuthToken, bool inExpiringSession, ResultHandler inResultHandler)
             {
+                inUserId = HttpUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/session_key";
                 IsSessionKeyRequired = false;
                 ResponseType = typeof(Response);

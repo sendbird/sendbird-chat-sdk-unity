@@ -3,6 +3,7 @@
 // 
 
 using System;
+using System.Web;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -24,6 +25,7 @@ namespace Sendbird.Chat
 
             internal Request(string inChannelUrl, string inUserId, bool inResetAll, ResultHandler inResultHandler)
             {
+                inChannelUrl = HttpUtility.UrlEncode(inChannelUrl);
                 Url = $"{ChannelTypeToUrlPrefix(SbChannelType.Group)}/{inChannelUrl}/reset_user_history";
                 ResponseType = typeof(Response);
                 resultHandler = inResultHandler;
