@@ -3,7 +3,7 @@
 // 
 
 using System;
-using System.Web;
+using System.Net;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -22,8 +22,8 @@ namespace Sendbird.Chat
 
             internal Request(string inBlockerUserId, string inTargetUserId, ResultHandler inResultHandler)
             {
-                inBlockerUserId = HttpUtility.UrlEncode(inBlockerUserId);
-                inTargetUserId = HttpUtility.UrlEncode(inTargetUserId);
+                inBlockerUserId = WebUtility.UrlEncode(inBlockerUserId);
+                inTargetUserId = WebUtility.UrlEncode(inTargetUserId);
                 Url = $"{USERS_PREFIX_URL}/{inBlockerUserId}/block";
 
                 resultHandler = inResultHandler;

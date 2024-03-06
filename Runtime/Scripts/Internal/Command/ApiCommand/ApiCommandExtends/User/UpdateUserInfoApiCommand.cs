@@ -4,7 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Web;
+using System.Net;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -30,7 +30,7 @@ namespace Sendbird.Chat
 
             internal Request(string inUserId, SbUserUpdateParams inParams, ResultHandler inResultHandler)
             {
-                inUserId = HttpUtility.UrlEncode(inUserId);
+                inUserId = WebUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}";
                 ResponseType = typeof(Response);
                 resultHandler = inResultHandler;

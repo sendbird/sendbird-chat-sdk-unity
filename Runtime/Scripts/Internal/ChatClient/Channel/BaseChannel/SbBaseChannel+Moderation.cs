@@ -120,13 +120,17 @@ namespace Sendbird.Chat
 
         private SbBannedUserListQuery CreateBannedUserListQueryInternal(SbBannedUserListQueryParams inParams = null)
         {
-            inParams ??= new SbBannedUserListQueryParams();
+            if (inParams == null)
+                inParams = new SbBannedUserListQueryParams();
+
             return new SbBannedUserListQuery(ChannelType, _url, inParams, chatMainContextRef);
         }
 
         private SbMutedUserListQuery CreateMutedUserListQueryInternal(SbMutedUserListQueryParams inParams = null)
         {
-            inParams ??= new SbMutedUserListQueryParams();
+            if (inParams == null)
+                inParams = new SbMutedUserListQueryParams();
+
             return new SbMutedUserListQuery(ChannelType, _url, inParams, chatMainContextRef);
         }
     }

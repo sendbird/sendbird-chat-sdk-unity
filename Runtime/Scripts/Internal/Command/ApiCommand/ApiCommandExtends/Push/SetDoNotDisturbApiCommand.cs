@@ -3,7 +3,7 @@
 // 
 
 using System;
-using System.Web;
+using System.Net;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -27,7 +27,7 @@ namespace Sendbird.Chat
 
             internal Request(string inUserId, bool inEnable, int inStartHour, int inStartMinute, int inEndHour, int inEndMinute, string inTimezone, ResultHandler inResultHandler)
             {
-                inUserId = HttpUtility.UrlEncode(inUserId);
+                inUserId = WebUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/push_preference";
                 resultHandler = inResultHandler;
 

@@ -2,7 +2,7 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System.Web;
+using System.Net;
 
 namespace Sendbird.Chat
 {
@@ -12,7 +12,7 @@ namespace Sendbird.Chat
         {
             internal Request(string inChannelUrl, SbChannelType inChannelType, long inMessageId, ResultHandler inResultHandler)
             {
-                inChannelUrl = HttpUtility.UrlEncode(inChannelUrl);
+                inChannelUrl = WebUtility.UrlEncode(inChannelUrl);
                 Url = $"{ChannelTypeToUrlPrefix(inChannelType)}/{inChannelUrl}/messages/{inMessageId}";
                 resultHandler = inResultHandler;
             }
