@@ -3,7 +3,7 @@
 // 
 
 using System;
-using System.Web;
+using System.Net;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -27,7 +27,7 @@ namespace Sendbird.Chat
             internal Request(string inChannelUrl, SbChannelType inChannelType, string inOffendingUserId, SbReportCategory inReportCategory,
                              string inReporterId, string inDescription, ResultHandler inResultHandler)
             {
-                inOffendingUserId = HttpUtility.UrlEncode(inOffendingUserId);
+                inOffendingUserId = WebUtility.UrlEncode(inOffendingUserId);
                 Url = $"{REPORT_PREFIX_URL}/{USERS_URL_NAME}/{inOffendingUserId}";
 
                 resultHandler = inResultHandler;

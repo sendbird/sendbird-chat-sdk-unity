@@ -331,20 +331,11 @@ namespace Sendbird.Chat
         {
             Logger.Info(Logger.CategoryType.WebSocket, "WsClient::WaitingForReceiveAsync start");
 
-            void DispatchReceiveErrorOnNextFrame(WsClientErrorType inClientReceiveErrorType, WsClientError inWsClientErrorNullable = null)
-            {
-                Logger.Warning(Logger.CategoryType.WebSocket, $"WsClient::DispatchReceiveErrorOnNextFrame ErrorType:{inClientReceiveErrorType}");
-                if (_eventListeners != null)
-                {
-                    CoroutineManager.Instance.CallOnNextFrame(() => { _eventListeners.OnErrorInOpenState(inClientReceiveErrorType, inWsClientErrorNullable); });
-                }
-            }
-
             ArraySegment<byte> buffer = WebSocket.CreateClientBuffer(1024, 1024);
             if (buffer.Array == null)
             {
                 Logger.Error(Logger.CategoryType.WebSocket, "WsClient::WaitingForReceiveAsync buffer.Array is null");
-                DispatchReceiveErrorOnNextFrame(WsClientErrorType.CreateReceiveBufferFailed);
+                OnDispatchReceiveErrorOnNextFrame(WsClientErrorType.CreateReceiveBufferFailed);
                 return;
             }
 
@@ -402,12 +393,14 @@ namespace Sendbird.Chat
 
                     if (webSocketReceiveResult.MessageType == WebSocketMessageType.Text)
                     {
-                        using StreamReader streamReader = new StreamReader(memoryStream, Encoding.UTF8);
-                        Task<string> readToEndTask = streamReader.ReadToEndAsync();
-                        await readToEndTask;
+                        using (StreamReader streamReader = new StreamReader(memoryStream, Encoding.UTF8))
+                        {
+                            Task<string> readToEndTask = streamReader.ReadToEndAsync();
+                            await readToEndTask;
 
-                        Logger.Info(Logger.CategoryType.WebSocket, $"WsClient::Receive {readToEndTask.Result}");
-                        _receiveQueue.Add(readToEndTask.Result);
+                            Logger.Info(Logger.CategoryType.WebSocket, $"WsClient::Receive {readToEndTask.Result}");
+                            _receiveQueue.Add(readToEndTask.Result);
+                        }
                     }
                     else if (webSocketReceiveResult.MessageType == WebSocketMessageType.Close)
                     {
@@ -427,7 +420,17 @@ namespace Sendbird.Chat
             Logger.Info(Logger.CategoryType.WebSocket, "WsClient::WaitForReceiveAsync end");
             
             if( isForcedClose == false)
-                DispatchReceiveErrorOnNextFrame(wsClientErrorType, wsClientError);
+                OnDispatchReceiveErrorOnNextFrame(wsClientErrorType, wsClientError);
+
+            return;
+            void OnDispatchReceiveErrorOnNextFrame(WsClientErrorType inClientReceiveErrorType, WsClientError inWsClientErrorNullable = null)
+            {
+                Logger.Warning(Logger.CategoryType.WebSocket, $"WsClient::DispatchReceiveErrorOnNextFrame ErrorType:{inClientReceiveErrorType}");
+                if (_eventListeners != null)
+                {
+                    CoroutineManager.Instance.CallOnNextFrame(() => { _eventListeners.OnErrorInOpenState(inClientReceiveErrorType, inWsClientErrorNullable); });
+                }
+            }
         }
     }
 }

@@ -3,7 +3,7 @@
 // 
 
 using System;
-using System.Web;
+using System.Net;
 
 namespace Sendbird.Chat
 {
@@ -13,7 +13,7 @@ namespace Sendbird.Chat
         {
             internal Request(string inChannelUrl, bool inIsInternal, ResultHandler inResultHandler)
             {
-                inChannelUrl = HttpUtility.UrlEncode(inChannelUrl);
+                inChannelUrl = WebUtility.UrlEncode(inChannelUrl);
                 Url = $"{ChannelTypeToUrlPrefix(SbChannelType.Group, inIsInternal)}/{inChannelUrl}";
                 ResponseType = typeof(Response);
                 resultHandler = inResultHandler;

@@ -2,7 +2,7 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System.Web;
+using System.Net;
 
 namespace Sendbird.Chat
 {
@@ -12,8 +12,8 @@ namespace Sendbird.Chat
         {
             internal Request(string inChannelUrl, SbChannelType inChannelType, string inUserId, ResultHandler inResultHandler)
             {
-                inChannelUrl = HttpUtility.UrlEncode(inChannelUrl);
-                inUserId = HttpUtility.UrlEncode(inUserId);
+                inChannelUrl = WebUtility.UrlEncode(inChannelUrl);
+                inUserId = WebUtility.UrlEncode(inUserId);
                 Url = $"{ChannelTypeToUrlPrefix(inChannelType)}/{inChannelUrl}/ban/{inUserId}";
                 resultHandler = inResultHandler;
             }

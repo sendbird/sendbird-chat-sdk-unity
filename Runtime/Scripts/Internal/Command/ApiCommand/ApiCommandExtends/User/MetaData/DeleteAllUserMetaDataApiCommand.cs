@@ -2,7 +2,7 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System.Web;
+using System.Net;
 
 namespace Sendbird.Chat
 {
@@ -12,7 +12,7 @@ namespace Sendbird.Chat
         {
             internal Request(string inUserId, ResultHandler inResultHandler)
             {
-                inUserId = HttpUtility.UrlEncode(inUserId);
+                inUserId = WebUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/metadata";
                 resultHandler = inResultHandler;
             }

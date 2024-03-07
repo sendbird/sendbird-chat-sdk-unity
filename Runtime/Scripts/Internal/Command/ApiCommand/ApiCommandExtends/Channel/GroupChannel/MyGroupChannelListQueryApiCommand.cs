@@ -5,7 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Web;
+using System.Net;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -48,7 +48,7 @@ namespace Sendbird.Chat
             private const string INCLUDE_CHAT_NOTIFICATION = "include_chat_notification";
             internal Request(string inUserId, string inToken, SbGroupChannelListQuery inQuery, ResultHandler inResultHandler)
             {
-                inUserId = HttpUtility.UrlEncode(inUserId);
+                inUserId = WebUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/my_group_channels";
                 ResponseType = typeof(Response);
                 resultHandler = inResultHandler;

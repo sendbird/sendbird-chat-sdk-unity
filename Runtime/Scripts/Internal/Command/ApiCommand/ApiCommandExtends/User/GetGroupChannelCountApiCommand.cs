@@ -3,7 +3,7 @@
 // 
 
 using System;
-using System.Web;
+using System.Net;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -14,7 +14,7 @@ namespace Sendbird.Chat
         {
             internal Request(string inUserId, SbMyMemberStateFilter inState, ResultHandler inResultHandler)
             {
-                inUserId = HttpUtility.UrlEncode(inUserId);
+                inUserId = WebUtility.UrlEncode(inUserId);
                 Url = $"{USERS_PREFIX_URL}/{inUserId}/group_channel_count";
 
                 ResponseType = typeof(Response);

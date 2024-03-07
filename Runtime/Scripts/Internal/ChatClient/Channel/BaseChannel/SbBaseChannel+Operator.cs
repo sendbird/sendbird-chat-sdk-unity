@@ -65,7 +65,9 @@ namespace Sendbird.Chat
 
         private SbOperatorListQuery CreateOperatorListQueryInternal(SbOperatorListQueryParams inParams = null)
         {
-            inParams ??= new SbOperatorListQueryParams();
+            if (inParams == null)
+                inParams = new SbOperatorListQueryParams();
+
             return new SbOperatorListQuery(ChannelType, _url, inParams, chatMainContextRef);
         }
     }
