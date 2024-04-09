@@ -9,9 +9,9 @@ namespace Sendbird.Chat
 {
     internal class SendbirdChatMainContext
     {
-        internal const string SDK_VERSION = "4.0.0-beta.1";
+        internal const string SDK_VERSION = "4.0.0-beta.3";
         internal const string PLATFORM_NAME = "Unity";
-        internal static readonly string PLATFORM_VERSION = Application.version;
+        internal static readonly string PLATFORM_VERSION = Application.unityVersion;
         internal static readonly string OS_NAME = Application.platform.ToString();
         internal static readonly string OS_VERSION = SystemInfo.operatingSystem;
         internal const int QUERY_DEFAULT_LIMIT = 20;
