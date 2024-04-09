@@ -1,5 +1,9 @@
 # Change Log
 
+## 4.0.0-beta.3 (Apr 9, 2024)
+### Improvements
+- Added SendbirdChatPrivacyInfo.xcprivacy for Apple Privacy Manifest
+
 ## 4.0.0-beta.2 (Mar 7, 2024)
 ### Improvements
 - Changed the JSON library from a binary to a dependency form
