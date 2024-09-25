@@ -15,7 +15,7 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
-            [JsonProperty("users")] internal readonly List<MemberDto> members;
+            [JsonProperty("users")] internal readonly List<MemberDto> members = null;
         }
 
         internal override ChannelReceiveWsReceiveCommand.CategoryType CategoryType => ChannelReceiveWsReceiveCommand.CategoryType.Join;

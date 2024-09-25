@@ -104,6 +104,18 @@ namespace Sendbird.Chat
             _pendingMessages.Clear();
             _failedMessages.Clear();
 
+            if (_messageListParams != null)
+            {
+                _messageListParams.PreviousResultSize = _messageListPreviousResultSize;
+                _messageListParams.NextResultSize = _messageListNextResultSize;
+                _messageListParams.IsInclusive = true;
+            }
+
+            _groupChannel.UpdateMessageCollectionLastAccessedAt();
+            _groupChannel.GetMessagesByTimestampInternal(_startingPoint, _messageListParams, OnGetMessageHandler);
+
+            return;
+            
             void OnChannelRefreshHandler(SbError inError)
             {
                 if (inError == null)
@@ -143,15 +155,6 @@ namespace Sendbird.Chat
 
                 inMessageCollectionInitHandler?.OnApiResult?.Invoke(inResponseMessages, null);
             }
-
-            if (_messageListParams != null)
-            {
-                _messageListParams.PreviousResultSize = _messageListPreviousResultSize;
-                _messageListParams.NextResultSize = _messageListNextResultSize;
-                _messageListParams.IsInclusive = true;
-            }
-
-            _groupChannel.GetMessagesByTimestampInternal(_startingPoint, _messageListParams, OnGetMessageHandler);
         }
 
         private protected override void DisposeInternal()
@@ -164,6 +167,11 @@ namespace Sendbird.Chat
             _hasNext = false;
             _lastSyncChangeLogsToken = null;
             _stateType = StateType.Disposed;
+            if (_groupChannel != null)
+            {
+                _groupChannel.UpdateMessageCollectionLastAccessedAt();
+            }
+            
             base.DisposeInternal();
         }
 

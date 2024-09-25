@@ -37,7 +37,7 @@ namespace Sendbird.Chat
         internal override void Enter(ParamsAbstract inParams)
         {
             base.Enter(inParams);
-            
+
             if (!(inParams is Params logoutParams))
             {
                 Logger.Error(Logger.CategoryType.Connection, "LogoutConnectionState::Enter Invalid params");
@@ -47,17 +47,19 @@ namespace Sendbird.Chat
             connectionManagerContextRef.SetLoggedInUser(null);
 
             _completionHandler = logoutParams.CompletionHandler;
-            void OnCloseWs(WsClientCloseResultType inWsClientCloseResultType)
+
+
+            _commandRouterRef.CloseWs(OnCloseWebSocket);
+
+            connectionManagerContextRef.ConnectionHandlersById.ForEachByValue(inHandler => { inHandler.OnDisconnected?.Invoke(logoutParams.UserId); });
+            return;
+            void OnCloseWebSocket(WsClientCloseResult inWsClientCloseResult)
             {
                 if (isEnteredState == false)
                     return;
 
                 InvokeAndSetNullToCompletionHandler();
             }
-
-            _commandRouterRef.CloseWs(OnCloseWs);
-            
-            connectionManagerContextRef.ConnectionHandlersById.ForEachByValue(inHandler => { inHandler.OnDisconnected?.Invoke(logoutParams.UserId); });
         }
 
         internal override void Exit()
@@ -67,7 +69,7 @@ namespace Sendbird.Chat
                 _completionHandler.Invoke();
                 _completionHandler = null;
             }
-            
+
             base.Exit();
         }
 

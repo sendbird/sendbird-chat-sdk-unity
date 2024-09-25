@@ -286,6 +286,9 @@ namespace Sendbird.Chat
 
                 inGroupChannel.UpdateDeliveryReceipts(deliveryWsReceive.updated);
 
+                if (string.IsNullOrEmpty(chatMainContextRef.CurrentUserId))
+                    return;
+
                 bool isOnlyMyReceipt = deliveryWsReceive.updated.ContainsKey(chatMainContextRef.CurrentUserId) && deliveryWsReceive.updated.Count == 1;
                 if (isOnlyMyReceipt)
                     return;

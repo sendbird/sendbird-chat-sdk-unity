@@ -14,9 +14,9 @@ namespace Sendbird.Chat
 #pragma warning disable CS0649
         [JsonProperty("description")] private readonly string _description;
         [JsonProperty("muted_description")] private readonly string _mutedDescription;
-        [JsonProperty("end_at")] private readonly long? _endAt;
-        [JsonProperty("muted_start_at")] private readonly long? _mutedStartAt;
-        [JsonProperty("muted_end_at")] private readonly long? _mutedEndAt;
+        [JsonProperty("end_at")] private readonly long? _endAt = null;
+        //[JsonProperty("muted_start_at")] private readonly long? _mutedStartAt = null;
+        [JsonProperty("muted_end_at")] private readonly long? _mutedEndAt = null;
         [JsonProperty("remaining_duration")] private readonly long? _remainingDuration;
         [JsonProperty("restriction_type")] private readonly string _restrictionType;
 #pragma warning restore CS0649

@@ -14,8 +14,8 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
-            [JsonProperty("blocker")] internal readonly UserDto blocker;
-            [JsonProperty("blockee")] internal readonly UserDto blockee;
+            [JsonProperty("blocker")] internal readonly UserDto blocker = null;
+            [JsonProperty("blockee")] internal readonly UserDto blockee = null;
         }
 
         internal override UserEventWsReceiveCommand.CategoryType CategoryType => UserEventWsReceiveCommand.CategoryType.Unblock;

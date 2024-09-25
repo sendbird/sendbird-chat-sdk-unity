@@ -37,7 +37,9 @@ namespace Sendbird.Chat
             Unhidden = 13001,
         }
 
+#pragma warning disable CS0649
         [JsonProperty("cat")] private readonly int _category;
+#pragma warning restore CS0649
         internal ChannelEventDataAbstract EventData { get; private set; }
         internal ChannelReceiveWsReceiveCommand() : base(WsCommandType.ChannelEvent) { }
 

@@ -54,6 +54,7 @@ namespace Sendbird.Chat
         [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
+#pragma warning disable CS0649
             [JsonProperty("prev_messages")] private readonly List<JObject> _prevMessageDtos;
             [JsonProperty("next_messages")] private readonly List<JObject> _nextMessageDtos;
             [JsonProperty("prev_has_more")] internal readonly bool prevHasMore;
@@ -61,6 +62,7 @@ namespace Sendbird.Chat
             [JsonProperty("is_huge_gap")] internal readonly bool isHugeGap;
             [JsonProperty("is_continuous_prev_messages")] internal readonly bool isContinuousPrevMessages;
             [JsonProperty("is_continuous_next_messages")] internal readonly bool isContinuousNextMessages;
+#pragma warning restore CS0649
             
             internal List<BaseMessageDto> PrevMessageDtos { get; private set; }
             internal List<BaseMessageDto> NextMessageDtos { get; private set; }

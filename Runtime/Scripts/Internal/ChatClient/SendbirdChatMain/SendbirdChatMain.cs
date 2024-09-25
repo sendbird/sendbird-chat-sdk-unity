@@ -3,7 +3,6 @@
 // 
 
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Sendbird.Chat
 {
@@ -17,7 +16,7 @@ namespace Sendbird.Chat
         internal string OSVersion => ChatMainContext.OsVersion;
         internal SbAppInfo AppInfo => ChatMainContext.AppInfo;
         internal SbUser CurrentUser => ChatMainContext.CurrentUserRef;
-        internal ConnectionStateInternalType ConnectionStateInternalType() => ChatMainContext.ConnectionManager.GetConnectionStateType();
+        internal ConnectionStateInternalType ConnectionStateInternalType => ChatMainContext.ConnectionManager.GetConnectionStateType();
         private readonly Dictionary<string, SbUserEventHandler> _userEventHandlersById = new Dictionary<string, SbUserEventHandler>();
 
         internal SendbirdChatMain()
@@ -30,12 +29,11 @@ namespace Sendbird.Chat
             if (_isTerminated == false)
                 Terminate();
 
-            ChatMainContext.Initialize(SendbirdChatMainContext.SDK_VERSION, SendbirdChatMainContext.PLATFORM_NAME, SendbirdChatMainContext.PLATFORM_VERSION,
-                                       SendbirdChatMainContext.OS_NAME, SendbirdChatMainContext.OS_VERSION, inInitParams.ApplicationId, inInitParams.AppVersion);
+            ChatMainContext.Initialize(inInitParams.ApplicationId, inInitParams.AppVersion);
 
             _isTerminated = false;
 
-            SendbirdChatMainManager.Instance.InsertChatMain(this);
+            SdkManager.Instance.InsertChatMain(this);
         }
 
         private void Terminate()
@@ -43,7 +41,7 @@ namespace Sendbird.Chat
             if (_isTerminated)
                 return;
 
-            SendbirdChatMainManager.Instance.RemoveChatMain(this);
+            SdkManager.Instance.RemoveChatMain(this);
             ChatMainContext.Terminate();
             _isTerminated = true;
         }

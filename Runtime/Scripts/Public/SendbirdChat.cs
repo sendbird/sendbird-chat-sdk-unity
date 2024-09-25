@@ -103,7 +103,7 @@ namespace Sendbird.Chat
         /// Performs a connection to Sendbird with the user ID and the access token.
         /// </summary>
         /// <param name="inUserId">The user ID.</param>
-        /// <param name="inAuthToken">The auth token. If the user doesnt have auth token, set nil.</param>
+        /// <param name="inAuthToken">The auth token. If the user doesn't have auth token, set nil.</param>
         /// <param name="inCompletionHandler">The handler block to execute. user is the object to represent the current user.</param>
         /// @since 4.0.0
         public static void Connect(string inUserId, string inAuthToken, SbUserHandler inCompletionHandler)
@@ -115,7 +115,7 @@ namespace Sendbird.Chat
         /// Performs a connection to Sendbird with the user ID and the access token.
         /// </summary>
         /// <param name="inUserId">The user ID.</param>
-        /// <param name="inAuthToken">The auth token. If the user doesnt have auth token, set nil.</param>
+        /// <param name="inAuthToken">The auth token. If the user doesn't have auth token, set nil.</param>
         /// <param name="inApiHost">apiHost</param>
         /// <param name="inWsHost">wsHost</param>
         /// <param name="inCompletionHandler">The handler block to execute. user is the object to represent the current user.</param>

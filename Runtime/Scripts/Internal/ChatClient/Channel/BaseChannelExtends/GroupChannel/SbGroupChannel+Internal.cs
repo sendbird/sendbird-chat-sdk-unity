@@ -26,7 +26,7 @@ namespace Sendbird.Chat
         private long _joinedAt;
         private SbBaseMessage _lastMessage;
         private readonly List<SbMember> _members = new List<SbMember>();
-        private long _messageCollectionLastAccessedAt;
+        private long _messageCollectionLastAccessedAt = 0;
         private long _messageOffsetTimestamp = INVALID_MESSAGE_OFFSET_TIMESTAMP;
         private int _messageSurvivalSeconds;
         private SbCountPreference _myCountPreference;
@@ -522,6 +522,11 @@ namespace Sendbird.Chat
         internal void SetMyMutedState(SbMutedState inMutedState)
         {
             _myMutedState = inMutedState;
+        }
+
+        internal void UpdateMessageCollectionLastAccessedAt()
+        {
+            _messageCollectionLastAccessedAt = TimeUtil.GetCurrentUnixTimeMilliseconds();
         }
     }
 }

@@ -11,7 +11,6 @@ namespace Sendbird.Chat
     {
         private readonly string _userId;
         private string _nickname;
-        private string _profileUrl;
         private string _plainProfileImageUrl;
         private List<string> _preferredLanguages;
         private Dictionary<string, string> _metaData;

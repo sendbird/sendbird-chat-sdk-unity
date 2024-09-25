@@ -47,8 +47,8 @@ namespace Sendbird.Chat
         [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-            [JsonProperty("updated")] private readonly List<JObject> _updatedMessageJObjects;
-            [JsonProperty("deleted")] internal readonly List<DeletedMessageDto> deletedMessageDtos;
+            [JsonProperty("updated")] private readonly List<JObject> _updatedMessageJObjects = null;
+            [JsonProperty("deleted")] internal readonly List<DeletedMessageDto> deletedMessageDtos = null;
             [JsonProperty("has_more")] internal readonly bool hasMore;
             [JsonProperty("next")] internal readonly string token;
             internal List<BaseMessageDto> UpdatedBaseMessageDtos { get; private set; }

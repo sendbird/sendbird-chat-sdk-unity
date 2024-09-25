@@ -15,7 +15,7 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
-            [JsonProperty("friend_discoveries")] internal readonly List<UserDto> friendDiscoveryUserDtos;
+            [JsonProperty("friend_discoveries")] internal readonly List<UserDto> friendDiscoveryUserDtos = null;
         }
 
         internal override UserEventWsReceiveCommand.CategoryType CategoryType => UserEventWsReceiveCommand.CategoryType.FriendDiscoveryReady;

@@ -131,25 +131,25 @@ namespace Sendbird.Chat
             StartTimeoutCoroutineAfterStopIfStarted(inTimeoutDuration);
         }
 
-        private void OnWebSocketConnectResultHandler(WsClientConnectResultType inResultType, WsClientError inErrorNullable)
+        private void OnWebSocketConnectResultHandler(WsClientConnectResult inConnectResult)
         {
             if (isEnteredState == false || _ignoreConnectResult)
                 return;
 
-            Logger.Info(Logger.CategoryType.Connection, $"ConnectingConnectionState::OnWebSocketConnectResultHandler ResultType:{inResultType}");
+            Logger.Info(Logger.CategoryType.Connection, $"ConnectingConnectionState::OnWebSocketConnectResultHandler ResultType:{inConnectResult}");
 
-            switch (inResultType)
+            switch (inConnectResult.resultType)
             {
-                case WsClientConnectResultType.Succeeded:
+                case WsClientConnectResult.ResultType.Succeeded:
                 {
                     connectionManagerContextRef.ClearConnectionRetryCount();
                     return;
                 }
-                case WsClientConnectResultType.InvalidParams:
-                case WsClientConnectResultType.Terminated:
+                case WsClientConnectResult.ResultType.InvalidParams:
+                case WsClientConnectResult.ResultType.Terminated:
                 {
                     SbError error = null;
-                    if (inResultType == WsClientConnectResultType.InvalidParams)
+                    if (inConnectResult.resultType == WsClientConnectResult.ResultType.InvalidParams)
                     {
                         error = SbErrorCodeExtension.CreateInvalidParameterError("UserId or WsHostUrl");
                     }
@@ -164,11 +164,8 @@ namespace Sendbird.Chat
                 }
                 default:
                 {
-                    if (inErrorNullable != null)
-                    {
-                        Logger.Warning(Logger.CategoryType.Connection, $"ConnectingConnectionState::OnWebSocketConnectResultHandler Error:{inErrorNullable.ErrorMessage}");
-                    }
-
+                    Logger.Warning(Logger.CategoryType.Connection, $"ConnectingConnectionState::OnWebSocketConnectResultHandler " +
+                                                                   $"ResultMessage:{inConnectResult.resultMessage} NativeErrorCode:{inConnectResult.nativeErrorCode}");
                     if (!connectionManagerContextRef.CanConnectionRetry())
                     {
                         InvokeAndSetNullToCompletionHandler(null, new SbError(SbErrorCode.NetworkError));
@@ -203,13 +200,13 @@ namespace Sendbird.Chat
             WsClientStateType wsClientStateType = _commandRouterRef.GetWsClientStateType();
             if (wsClientStateType == WsClientStateType.Connecting || wsClientStateType == WsClientStateType.Open)
             {
-                void OnCloseResultHandler(WsClientCloseResultType inWsClientCloseResultType)
+                void OnCloseResultHandler(WsClientCloseResult inWsClientCloseResult)
                 {
                     _ignoreConnectResult = false;
                     if (isEnteredState == false)
                         return;
 
-                    Logger.Info(Logger.CategoryType.Connection, $"ConnectingConnectionState::ConnectWebSocketAfterClose Close ResultType:{inWsClientCloseResultType}");
+                    Logger.Info(Logger.CategoryType.Connection, $"ConnectingConnectionState::ConnectWebSocketAfterClose Close ResultType:{inWsClientCloseResult.resultType}");
                     SetValuesBeforeConnect();
                     _commandRouterRef.ConnectWs(_connectingWsHost, _connectingUserId, _connectingAuthToken, null, OnWebSocketConnectResultHandler);
                 }
@@ -289,14 +286,14 @@ namespace Sendbird.Chat
         {
             if (inTimeoutDuration <= 0)
             {
-                Logger.Warning(Logger.CategoryType.Connection, "Connection timeout is 0");
+                Logger.Warning(Logger.CategoryType.Connection, "ConnectingConnectionState Connection timeout is 0");
                 inTimeoutDuration = NetworkConfig.DEFAULT_CONNECTION_TIMEOUT_DURATION;
             }
 
             inTimeoutDuration = 5;
-            Logger.Info(Logger.CategoryType.Connection, "TimeoutStart");
+            Logger.Info(Logger.CategoryType.Connection, "ConnectingConnectionState TimeoutStart");
             yield return new WaitForSecondsYield(inTimeoutDuration);
-            Logger.Info(Logger.CategoryType.Connection, "TimeoutEnd");
+            Logger.Info(Logger.CategoryType.Connection, "ConnectingConnectionState TimeoutEnd");
 
             InvokeAndSetNullToCompletionHandler(null, new SbError(SbErrorCode.LoginTimeout));
 

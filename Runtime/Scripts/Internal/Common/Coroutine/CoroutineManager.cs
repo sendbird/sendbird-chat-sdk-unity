@@ -19,6 +19,7 @@ namespace Sendbird.Chat
         {
             CoroutineJob coroutine = new CoroutineJob(inEnumerator);
             _startedCoroutineJobs.Add(coroutine);
+            SdkManager.Instance.StartAsyncProcessIfNotRunning();
             return coroutine;
         }
 

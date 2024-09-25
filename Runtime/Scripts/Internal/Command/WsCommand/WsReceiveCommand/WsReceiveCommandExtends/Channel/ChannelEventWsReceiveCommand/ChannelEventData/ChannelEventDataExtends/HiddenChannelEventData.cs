@@ -15,8 +15,8 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
-            [JsonProperty("allow_auto_unhide")] internal readonly bool allowAutoUnhide;
-            [JsonProperty("hide_previous_messages")] internal readonly bool hidePreviousMessages;
+            [JsonProperty("allow_auto_unhide")] internal readonly bool allowAutoUnhide = false;
+            [JsonProperty("hide_previous_messages")] internal readonly bool hidePreviousMessages = false;
         }
 
         [JsonProperty("ts_message_offset")] internal readonly long messageOffset;

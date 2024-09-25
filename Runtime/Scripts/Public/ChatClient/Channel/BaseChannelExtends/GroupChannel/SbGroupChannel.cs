@@ -127,7 +127,7 @@ namespace Sendbird.Chat
         public IReadOnlyList<SbMember> Members => _members;
 
         /// <summary>
-        /// Member list for this channel.
+        /// The local timestamp of when this channel has been used in a SbMessageCollection.
         /// </summary>
         /// @since 4.0.0
         public long MessageCollectionLastAccessedAt => _messageCollectionLastAccessedAt;

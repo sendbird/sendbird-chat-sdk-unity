@@ -12,6 +12,7 @@ namespace Sendbird.Chat
     [Serializable]
     internal abstract class ChannelEventDataAbstract
     {
+#pragma warning disable CS0649
         [JsonProperty("channel_url")] internal readonly string channelUrl;
         [JsonProperty("channel_type")] private readonly string _channelType;
         [JsonProperty("is_super")] internal readonly bool isSuper;
@@ -21,6 +22,7 @@ namespace Sendbird.Chat
         [JsonProperty("member_count")] internal readonly int? memberCount;
         [JsonProperty("joined_member_count")] internal readonly int? joinedMemberCount;
         [JsonProperty("data")] protected readonly JObject data;
+#pragma warning restore CS0649
         internal abstract ChannelReceiveWsReceiveCommand.CategoryType CategoryType { get; }
         internal SbChannelType ChannelType { get; private set; }
         internal BaseChannelDto BaseChannelDto { get; private set; }

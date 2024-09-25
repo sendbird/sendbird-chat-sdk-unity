@@ -13,8 +13,8 @@ namespace Sendbird.Chat
 {
     internal class CommandRouter : IWsClientEventListener
     {
-        private readonly WsClient _wsClient = new WsClient();
-        private readonly IHttpClient _apiClient = new UnityHttpClient();
+        private readonly WebSocketClient _wsClient = new WebSocketClient();
+        private readonly IPlatformHttpClient _apiClient = PlatformModule.PlatformProvider.CreateHttpClient();
         private readonly SendbirdChatMainContext _chatMainContextRef = null;
         private string _sessionKey = null;
         private readonly Dictionary<string, WsCommandAckTimer> _commandAckTimersByRequestId = new Dictionary<string, WsCommandAckTimer>();
@@ -231,10 +231,10 @@ namespace Sendbird.Chat
                                                                 inResultHandler, inApiRequest.OnUploadProgress);
             }
 
-            requestParams.InsertCustomHeader(ConnectionHeaders.CONTENT_TYPE_NAME, inApiRequest.ContentTypeValue);
             requestParams.InsertCustomHeader(ConnectionHeaders.ACCEPT.Name, ConnectionHeaders.ACCEPT.Value);
             requestParams.InsertCustomHeader(ConnectionHeaders.USER_AGENT.Name, ConnectionHeaders.USER_AGENT.Value);
             requestParams.InsertCustomHeader(ConnectionHeaders.SB_USER_AGENT.Name, ConnectionHeaders.SB_USER_AGENT.Value);
+            requestParams.InsertCustomHeader(ConnectionHeaders.SB_SDK_USER_AGENT.Name, ConnectionHeaders.SB_SDK_USER_AGENT.Value);
             requestParams.InsertCustomHeader(ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Name, ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Value);
             string valueOfSendbirdName = ConnectionHeaders.BuildValueOfSendbirdName(_chatMainContextRef.ApplicationId, _chatMainContextRef.CustomerAppVersion);
             requestParams.InsertCustomHeader(ConnectionHeaders.SENDBIRD_NAME, valueOfSendbirdName);
@@ -276,15 +276,9 @@ namespace Sendbird.Chat
             return null;
         }
 
-        internal void ConnectWs(string inWsHost, string inUserId, string inAccessToken = null, string inSessionKey = null, WsClient.WsConnectResultHandler inResultHandler = null)
+        internal void ConnectWs(string inWsHost, string inUserId, string inAccessToken = null, string inSessionKey = null, WebSocketClient.ConnectResultDelegate inResultHandler = null)
         {
-            string uri = CreateWebSocketUri(inWsHost, inUserId, inAccessToken, inSessionKey);
-            WsClientConnectParams wsClientConnectParams = new WsClientConnectParams(uri);
-            {
-                wsClientConnectParams.CustomHeaders.Add(ConnectionHeaders.USER_AGENT.Name, ConnectionHeaders.USER_AGENT.Value);
-                wsClientConnectParams.CustomHeaders.Add(ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Name, ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Value);
-            }
-
+            WsClientConnectParams wsClientConnectParams = CreateWebSocketClientConnectParams(inWsHost, inUserId, inAccessToken, inSessionKey);
             _wsClient.Connect(wsClientConnectParams, inResultHandler);
         }
 
@@ -331,11 +325,11 @@ namespace Sendbird.Chat
 
             if (_sendingWsCommand == null && 0 < _wsCommandSendQueue.Count)
             {
-                void OnSendResult(WsClientSendResultType inSendResultType, WsClientError inWsClientErrorNullable)
+                void OnSendResult(WsClientSendResult inSendResult)
                 {
-                    if (inSendResultType != WsClientSendResultType.Succeeded)
+                    if (inSendResult.resultType != WsClientSendResult.ResultType.Succeeded)
                     {
-                        SbError error = inWsClientErrorNullable == null ? new SbError(SbErrorCode.RequestFailed) : new SbError(SbErrorCode.RequestFailed, inWsClientErrorNullable.ErrorMessage);
+                        SbError error = new SbError(SbErrorCode.RequestFailed, inSendResult.resultMessage);
                         _sendingWsCommand.SendCompletionHandler?.Invoke(error);
                         _eventListeners.ForEach(inEventListener => { inEventListener.OnWsError(error); });
                     }
@@ -353,21 +347,22 @@ namespace Sendbird.Chat
                     StartAckTimer(_sendingWsCommand.ReqId, _sendingWsCommand.AckCompletionHandler);
                 }
 
+                Logger.Info(Logger.CategoryType.Command, $"SendWsCommandFromQueueIfAble json:{_sendingWsCommand.ToJsonString()}");
                 _wsClient.Send(_sendingWsCommand.ToJsonString(), OnSendResult);
             }
         }
 
-        internal void CloseWs(Action<WsClientCloseResultType> inResultHandler = null)
+        internal void CloseWs(Action<WsClientCloseResult> inResultHandler = null)
         {
             _wsClient.Close(inResultHandler);
         }
 
         internal WsClientStateType GetWsClientStateType()
         {
-            return _wsClient.StateType;
+            return _wsClient.ClientStateType;
         }
 
-        private string CreateWebSocketUri(string inWebSocketHostUrl, string inUserId, string inAuthToken = null, string inSessionKey = null)
+        private WsClientConnectParams CreateWebSocketClientConnectParams(string inWebSocketHostUrl, string inUserId, string inAuthToken = null, string inSessionKey = null)
         {
             if (string.IsNullOrEmpty(inWebSocketHostUrl) || string.IsNullOrEmpty(inUserId) || _chatMainContextRef == null)
             {
@@ -377,31 +372,44 @@ namespace Sendbird.Chat
 
             StringBuilder uriStringBuilder = new StringBuilder(inWebSocketHostUrl);
             {
-                uriStringBuilder.Append($"/?p={_chatMainContextRef.PlatformName}");
+                uriStringBuilder.Append($"/?p={WebUtility.UrlEncode(SendbirdChatMainContext.PLATFORM_NAME)}");
                 uriStringBuilder.Append($"&user_id={WebUtility.UrlEncode(inUserId)}");
-
-                if (string.IsNullOrEmpty(inAuthToken) == false)
-                    uriStringBuilder.Append($"&access_token={WebUtility.UrlEncode(inAuthToken)}");
-
-                if (string.IsNullOrEmpty(inSessionKey) == false)
-                    uriStringBuilder.Append($"&key={WebUtility.UrlEncode(inSessionKey)}");
 
                 if (_chatMainContextRef.SessionManager != null && _chatMainContextRef.SessionManager.HasSessionHandler())
                     uriStringBuilder.Append("&expiring_session=1");
 
                 if (_chatMainContextRef.UserLocalCache)
                     uriStringBuilder.Append("&use_local_cache=1");
-                
-                uriStringBuilder.Append($"&pv={WebUtility.UrlEncode(_chatMainContextRef.PlatformVersion)}");
+
+                uriStringBuilder.Append($"&pv={WebUtility.UrlEncode(SendbirdChatMainContext.PLATFORM_NAME)}");
+                uriStringBuilder.Append($"&sv={WebUtility.UrlEncode(_chatMainContextRef.SdkVersion)}");
                 uriStringBuilder.Append($"&ai={WebUtility.UrlEncode(_chatMainContextRef.ApplicationId)}");
                 uriStringBuilder.Append($"&av={WebUtility.UrlEncode(_chatMainContextRef.CustomerAppVersion)}");
-                uriStringBuilder.Append($"&o={WebUtility.UrlEncode(_chatMainContextRef.OsName)}");
+                uriStringBuilder.Append($"&o={WebUtility.UrlEncode(SendbirdChatMainContext.OS_NAME)}");
                 uriStringBuilder.Append("&include_extra_data=premium_feature_list,file_upload_size_limit,application_attributes,emoji_hash");
                 uriStringBuilder.Append($"&{ConnectionHeaders.SB_USER_AGENT.Name}={ConnectionHeaders.SB_USER_AGENT.Value}");
                 uriStringBuilder.Append($"&{ConnectionHeaders.SB_SDK_USER_AGENT.Name}={ConnectionHeaders.SB_SDK_USER_AGENT.Value}");
+                
+#if UNITY_WEBGL
+                uriStringBuilder.Append($"&{ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Name}={ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Value}");
+#endif
             }
 
-            return uriStringBuilder.ToString();
+            WsClientConnectParams wsClientConnectParams = new WsClientConnectParams(uriStringBuilder.ToString());
+            {
+#if !UNITY_WEBGL
+                wsClientConnectParams.CustomHeaders.Add(ConnectionHeaders.USER_AGENT.Name, ConnectionHeaders.USER_AGENT.Value);
+                wsClientConnectParams.CustomHeaders.Add(ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Name, ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Value);
+#endif
+
+                if (string.IsNullOrEmpty(inAuthToken) == false)
+                    wsClientConnectParams.CustomHeaders.Add(ConnectionHeaders.SENDBIRD_WS_TOKEN, WebUtility.UrlEncode(inAuthToken));
+
+                if (string.IsNullOrEmpty(inSessionKey) == false)
+                    wsClientConnectParams.CustomHeaders.Add(ConnectionHeaders.SENDBIRD_WS_AUTH, WebUtility.UrlEncode(inSessionKey));
+            }
+
+            return wsClientConnectParams;
         }
 
         private void StartAckTimer(string inRequestId, WsSendCommandAbstract.AckHandler inAckHandler)
@@ -481,15 +489,15 @@ namespace Sendbird.Chat
             }
         }
 
-        void IWsClientEventListener.OnErrorInOpenState(WsClientErrorType inErrorType, WsClientError inWsClientErrorNullable)
+        void IWsClientEventListener.OnErrorInOpenState(WsClientError inWsClientError)
         {
             SbErrorCode errorCode = SbErrorCode.WebSocketConnectionFailed;
-            if (inErrorType == WsClientErrorType.ReceivedClose || inErrorType == WsClientErrorType.SocketClosed)
+            if (inWsClientError.ClientErrorType == WsClientErrorType.ReceivedClose || inWsClientError.ClientErrorType == WsClientErrorType.SocketClosed)
             {
                 errorCode = SbErrorCode.WebSocketConnectionClosed;
             }
 
-            SbError error = inWsClientErrorNullable == null ? new SbError(errorCode) : new SbError(errorCode, inWsClientErrorNullable.ErrorMessage);
+            SbError error = new SbError(errorCode, inWsClientError.ErrorMessage);
             _eventListeners.ForEach(inEventListener => { inEventListener.OnWsError(error); });
         }
 

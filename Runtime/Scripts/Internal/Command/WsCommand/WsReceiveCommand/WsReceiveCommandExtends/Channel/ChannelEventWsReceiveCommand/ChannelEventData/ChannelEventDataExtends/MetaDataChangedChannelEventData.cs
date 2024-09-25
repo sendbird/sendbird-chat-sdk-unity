@@ -15,9 +15,11 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
+#pragma warning disable CS0649
             [JsonProperty("created")] internal readonly Dictionary<string, string> created;
             [JsonProperty("updated")] internal readonly Dictionary<string, string> updated;
             [JsonProperty("deleted")] internal readonly List<string> deleted;
+#pragma warning restore CS0649
         }
 
         internal override ChannelReceiveWsReceiveCommand.CategoryType CategoryType => ChannelReceiveWsReceiveCommand.CategoryType.MetaDataChanged;

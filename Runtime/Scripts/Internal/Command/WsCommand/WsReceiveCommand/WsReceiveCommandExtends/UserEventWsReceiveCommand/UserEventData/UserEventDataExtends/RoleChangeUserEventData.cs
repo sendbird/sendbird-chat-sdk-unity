@@ -14,8 +14,10 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
+#pragma warning disable CS0649
             [JsonProperty("channel_url")] internal readonly string channelUrl;
             [JsonProperty("my_role")] internal readonly string myRole;
+#pragma warning restore CS0649
         }
 
         internal override UserEventWsReceiveCommand.CategoryType CategoryType => UserEventWsReceiveCommand.CategoryType.RoleChange;
