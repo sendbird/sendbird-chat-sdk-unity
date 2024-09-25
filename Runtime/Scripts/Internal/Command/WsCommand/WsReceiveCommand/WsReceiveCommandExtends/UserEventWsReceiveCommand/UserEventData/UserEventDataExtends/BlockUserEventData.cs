@@ -14,8 +14,10 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
+#pragma warning disable CS0649
             [JsonProperty("blocker")] internal readonly UserDto blocker;
             [JsonProperty("blockee")] internal readonly UserDto blockee;
+#pragma warning restore CS0649
         }
 
         internal override UserEventWsReceiveCommand.CategoryType CategoryType => UserEventWsReceiveCommand.CategoryType.Block;

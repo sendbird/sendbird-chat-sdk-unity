@@ -15,7 +15,7 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
-            [JsonProperty("operators")] internal readonly List<MemberDto> operators;
+            [JsonProperty("operators")] internal readonly List<MemberDto> operators = null;
         }
 
         internal override ChannelReceiveWsReceiveCommand.CategoryType CategoryType => ChannelReceiveWsReceiveCommand.CategoryType.UpdateOperator;

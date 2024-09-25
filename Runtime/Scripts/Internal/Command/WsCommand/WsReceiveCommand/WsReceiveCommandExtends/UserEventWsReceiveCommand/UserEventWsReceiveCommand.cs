@@ -17,8 +17,9 @@ namespace Sendbird.Chat
             RoleChange = 20100,
             FriendDiscoveryReady = 20900
         }
-
+#pragma warning disable CS0649
         [JsonProperty("cat")] private readonly int _category;
+#pragma warning restore CS0649
         internal UserEventDataAbstract EventData { get; private set; }
         internal UserEventWsReceiveCommand() : base(WsCommandType.UserEvent) { }
 

@@ -156,36 +156,6 @@ namespace Sendbird.Chat
             return _currentState != null ? _currentState.StateType : ConnectionStateInternalType.None;
         }
 
-        private string CreateWebSocketUri(string inWebSocketHostUrl, string inUserId, string inAuthToken = null, string inSessionKey = null)
-        {
-            if (string.IsNullOrEmpty(inWebSocketHostUrl) || string.IsNullOrEmpty(inUserId) || _chatMainContextRef == null)
-            {
-                Logger.Error(Logger.CategoryType.Connection, "ConnectionManager::CreateWebSocketUri HostUrl or UserId or ChatContext is null");
-                return null;
-            }
-
-            StringBuilder uriStringBuilder = new StringBuilder(inWebSocketHostUrl);
-            {
-                uriStringBuilder.Append($"/?p={_chatMainContextRef.PlatformName}");
-                uriStringBuilder.Append($"&user_id={inUserId}");
-
-                if (string.IsNullOrEmpty(inAuthToken) == false)
-                    uriStringBuilder.Append($"&access_token={inAuthToken}");
-
-                if (string.IsNullOrEmpty(inSessionKey) == false)
-                    uriStringBuilder.Append($"&key={inSessionKey}");
-
-                uriStringBuilder.Append($"&pv={_chatMainContextRef.PlatformVersion}");
-                uriStringBuilder.Append($"&ai={_chatMainContextRef.ApplicationId}");
-                uriStringBuilder.Append($"&av={_chatMainContextRef.CustomerAppVersion}");
-                uriStringBuilder.Append($"&o={_chatMainContextRef.OsName}");
-                uriStringBuilder.Append("&include_extra_data=premium_feature_list,file_upload_size_limit,application_attributes,emoji_hash");
-                uriStringBuilder.Append($"&{ConnectionHeaders.SB_USER_AGENT.Name}={ConnectionHeaders.SB_USER_AGENT.Value}");
-            }
-
-            return uriStringBuilder.ToString();
-        }
-
         internal void OnEnterForeground()
         {
             _currentState.OnEnterForeground();

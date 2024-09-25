@@ -11,10 +11,12 @@ namespace Sendbird.Chat
     [Serializable]
     internal class SendUserMessageWsSendCommand : SendMessageWsSendCommandAbstract
     {
+#pragma warning disable CS0649
         [JsonProperty("message")] private readonly string _message;
         [JsonProperty("target_langs")] private readonly List<string> _translationTargetLanguages;
-        [JsonProperty("poll_id")] private readonly long? _pollId;
+        //[JsonProperty("poll_id")] private readonly long? _pollId = null;
         [JsonProperty("mentioned_message_template")] private readonly string _mentionedMessageTemplate;
+#pragma warning restore CS0649
 
         internal SendUserMessageWsSendCommand(string inReqId, string inChannelUrl, SbUserMessageCreateParams inUserMessageCreateParams, AckHandler inAckHandler)
             : base(WsCommandType.UserMessage, inReqId, inChannelUrl, inUserMessageCreateParams, inAckHandler)

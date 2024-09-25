@@ -28,7 +28,7 @@ namespace Sendbird.Chat
         internal sealed class Response : ApiCommandAbstract.Response
         {
             [JsonProperty("device_tokens")] internal readonly List<string> deviceTokens;
-            [JsonProperty("type")] private readonly string _pushTokenType;
+            [JsonProperty("type")] private readonly string _pushTokenType = null;
             [JsonProperty("token")] internal readonly string token;
             [JsonProperty("has_more")] internal readonly bool hasMore;
 

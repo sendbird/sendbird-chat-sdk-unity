@@ -40,8 +40,10 @@ namespace Sendbird.Chat
         [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
+#pragma warning disable CS0649
             [JsonProperty("key")] private readonly string _key;
             [JsonProperty("new_key")] private readonly string _newKey;
+#pragma warning restore CS0649
 
             internal string Key { get; private set; }
 

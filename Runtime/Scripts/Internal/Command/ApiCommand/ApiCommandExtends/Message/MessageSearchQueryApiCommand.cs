@@ -48,10 +48,12 @@ namespace Sendbird.Chat
         [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
+#pragma warning disable CS0649
             [JsonProperty("results")] private readonly List<JObject> _messageJObjects;
             [JsonProperty("total_count")] internal readonly int totalCount;
             [JsonProperty("end_cursor")] internal readonly string endToken;
             [JsonProperty("has_next")] internal readonly bool hasNext;
+#pragma warning restore CS0649
 
             internal List<BaseMessageDto> BaseMessageDtos { get; private set; }
 

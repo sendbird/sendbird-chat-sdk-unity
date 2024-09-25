@@ -3,7 +3,6 @@
 // 
 
 using System.Text;
-using UnityEngine;
 
 namespace Sendbird.Chat
 {
@@ -24,7 +23,8 @@ namespace Sendbird.Chat
             Rtc,
         }
 
-        internal static InternalLogLevel InternalLogLevel { get; private set; } = InternalLogLevel.None;
+        private static readonly IPlatformLogger _logger = PlatformModule.PlatformProvider.CreateLogger();
+        internal static InternalLogLevel InternalLogLevel { get; set; } = InternalLogLevel.None;
         private static readonly StringBuilder _tempStringBuilder = new StringBuilder();
 
         internal static void Error(CategoryType inCategoryType, string inMessage)
@@ -32,8 +32,8 @@ namespace Sendbird.Chat
             if (InternalLogLevel <= InternalLogLevel.Error)
             {
                 _tempStringBuilder.Clear();
-                _tempStringBuilder.Append($"[Sb{inCategoryType}_{Time.frameCount}]{inMessage}");
-                UnityEngine.Debug.LogError(_tempStringBuilder);
+                _tempStringBuilder.Append($"[Sb{inCategoryType}]{inMessage}");
+                _logger.Error(_tempStringBuilder.ToString());
             }
         }
 
@@ -42,8 +42,8 @@ namespace Sendbird.Chat
             if (InternalLogLevel <= InternalLogLevel.Warning)
             {
                 _tempStringBuilder.Clear();
-                _tempStringBuilder.Append($"[Sb{inCategoryType}_{Time.frameCount}]{inMessage}");
-                UnityEngine.Debug.LogWarning(_tempStringBuilder);
+                _tempStringBuilder.Append($"[Sb{inCategoryType}]{inMessage}");
+                _logger.Warning(_tempStringBuilder.ToString());
             }
         }
 
@@ -52,8 +52,8 @@ namespace Sendbird.Chat
             if (InternalLogLevel <= InternalLogLevel.Info)
             {
                 _tempStringBuilder.Clear();
-                _tempStringBuilder.Append($"[Sb{inCategoryType}_{Time.frameCount}]{inMessage}");
-                UnityEngine.Debug.Log(_tempStringBuilder);
+                _tempStringBuilder.Append($"[Sb{inCategoryType}]{inMessage}");
+                _logger.Info(_tempStringBuilder.ToString());
             }
         }
 
@@ -62,8 +62,8 @@ namespace Sendbird.Chat
             if (InternalLogLevel <= InternalLogLevel.Debug)
             {
                 _tempStringBuilder.Clear();
-                _tempStringBuilder.Append($"[Sb{inCategoryType}_{Time.frameCount}]{inMessage}");
-                UnityEngine.Debug.Log(_tempStringBuilder);
+                _tempStringBuilder.Append($"[Sb{inCategoryType}]{inMessage}");
+                _logger.Debug(_tempStringBuilder.ToString());
             }
         }
 
@@ -72,8 +72,8 @@ namespace Sendbird.Chat
             if (InternalLogLevel <= InternalLogLevel.Verbose)
             {
                 _tempStringBuilder.Clear();
-                _tempStringBuilder.Append($"[Sb{inCategoryType}_{Time.frameCount}]{inMessage}");
-                UnityEngine.Debug.Log(_tempStringBuilder);
+                _tempStringBuilder.Append($"[Sb{inCategoryType}]{inMessage}");
+                _logger.Verbose(_tempStringBuilder.ToString());
             }
         }
 

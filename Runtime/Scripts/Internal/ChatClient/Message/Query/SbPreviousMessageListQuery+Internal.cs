@@ -22,11 +22,9 @@ namespace Sendbird.Chat
         private readonly bool _includeParentMessageInfo = false;
         private readonly bool _showSubChannelMessagesOnly = false;
         private readonly int _limit;
-        private long _messageTimestamp;
         private readonly SendbirdChatMainContext _chatMainContextRef;
         private bool _hasNext;
         private bool _isLoading = false;
-        private string _token;
         private long _minimumTimestamp = long.MaxValue;
 
         internal SbPreviousMessageListQuery(SbChannelType inChannelType, string inChannelUrl, SbPreviousMessageListQueryParams inQueryParams, SendbirdChatMainContext inChatMainContext)

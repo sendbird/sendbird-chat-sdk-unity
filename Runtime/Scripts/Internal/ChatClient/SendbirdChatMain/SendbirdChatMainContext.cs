@@ -3,22 +3,18 @@
 // 
 
 using System;
-using UnityEngine;
 
 namespace Sendbird.Chat
 {
     internal class SendbirdChatMainContext
     {
-        internal const string SDK_VERSION = "4.0.0-beta.3";
-        internal const string PLATFORM_NAME = "Unity";
-        internal static readonly string PLATFORM_VERSION = Application.unityVersion;
-        internal static readonly string OS_NAME = Application.platform.ToString();
-        internal static readonly string OS_VERSION = SystemInfo.operatingSystem;
+        internal static readonly string SDK_VERSION = PlatformModule.PlatformProvider.PlatformApplication.SdkVersion;
+        internal static readonly string PLATFORM_NAME = PlatformModule.PlatformProvider.PlatformApplication.PlatformName;
+        internal static readonly string PLATFORM_VERSION = PlatformModule.PlatformProvider.PlatformApplication.PlatformVersion;
+        internal static readonly string OS_NAME = PlatformModule.PlatformProvider.PlatformApplication.OsName;
+        internal static readonly string OS_VERSION = PlatformModule.PlatformProvider.PlatformApplication.OsVersion;
         internal const int QUERY_DEFAULT_LIMIT = 20;
         internal string SdkVersion { get; private set; }
-        internal string PlatformName { get; private set; }
-        internal string PlatformVersion { get; private set; }
-        internal string OsName { get; private set; }
         internal string OsVersion { get; private set; }
         internal string ApplicationId { get; private set; }
         internal string CustomerAppVersion { get; private set; }
@@ -27,8 +23,8 @@ namespace Sendbird.Chat
         internal string EKey { get; private set; } = null;
         internal bool UserLocalCache { get; } = false;
         internal int MaxUnreadCountOnSuperGroup { get; private set; }
+        internal bool UseMemberInfoInMessage { get; private set; }
         internal SbUnreadMessageCount UnreadMessageCount { get; } = new SbUnreadMessageCount();
-        internal bool UseMemberInfoInMessage { get; private set; } = true;
         internal float TypingIndicatorThrottle { get; private set; } = 1.0f;
         internal SbAppInfo AppInfo { get; } = new SbAppInfo();
         internal NetworkConfig NetworkConfig { get; } = new NetworkConfig();
@@ -53,16 +49,12 @@ namespace Sendbird.Chat
             CollectionManager = new CollectionManager(this);
         }
 
-        internal void Initialize(string inSdkVersion, string inPlatformName, string inPlatformVersion,
-                                 string inOsName, string inOsVersion, string inApplicationId, string inCustomerAppVersion)
+        internal void Initialize(string inApplicationId, string inCustomerAppVersion, string inSdkVersion = null, string inOsVersion = null)
         {
-            SdkVersion = inSdkVersion;
-            PlatformName = inPlatformName;
-            PlatformVersion = inPlatformVersion;
-            OsName = inOsName;
-            OsVersion = inOsVersion;
-            ApplicationId = inApplicationId;
-            CustomerAppVersion = inCustomerAppVersion;
+            ApplicationId = string.IsNullOrEmpty(inApplicationId) ? string.Empty : inApplicationId;
+            CustomerAppVersion = string.IsNullOrEmpty(inCustomerAppVersion) ? string.Empty : inCustomerAppVersion;
+            SdkVersion = string.IsNullOrEmpty(inSdkVersion) ? SendbirdChatMainContext.SDK_VERSION : inSdkVersion;
+            OsVersion = string.IsNullOrEmpty(inOsVersion) ? SendbirdChatMainContext.OS_VERSION : inOsVersion;
 
             CommandRouter.Initialize();
             CommandRouter.InsertEventListener(_ownerChatMain);

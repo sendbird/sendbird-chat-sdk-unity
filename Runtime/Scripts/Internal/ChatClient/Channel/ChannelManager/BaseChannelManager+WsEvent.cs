@@ -3,7 +3,6 @@
 // 
 
 using System;
-using UnityEngine.PlayerLoop;
 
 namespace Sendbird.Chat
 {

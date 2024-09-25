@@ -1,5 +1,9 @@
 # Change Log
 
+## 4.0.0 (Sep 25, 2024)
+### Features
+- Added support for WebGL
+
 ## 4.0.0-beta.3 (Apr 9, 2024)
 ### Improvements
 - Added SendbirdChatPrivacyInfo.xcprivacy for Apple Privacy Manifest

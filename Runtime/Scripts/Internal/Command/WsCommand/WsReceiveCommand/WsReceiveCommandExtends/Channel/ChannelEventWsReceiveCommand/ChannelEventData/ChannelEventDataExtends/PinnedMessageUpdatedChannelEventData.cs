@@ -16,8 +16,10 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
+#pragma warning disable CS0649
             [JsonProperty("pinned_message_ids")] internal readonly List<long> pinnedMessageIds;
             [JsonProperty("latest_pinned_message")] internal readonly JObject lastPinnedMessageJObject;
+#pragma warning restore CS0649
         }
 
         internal override ChannelReceiveWsReceiveCommand.CategoryType CategoryType => ChannelReceiveWsReceiveCommand.CategoryType.PinnedMessageUpdated;

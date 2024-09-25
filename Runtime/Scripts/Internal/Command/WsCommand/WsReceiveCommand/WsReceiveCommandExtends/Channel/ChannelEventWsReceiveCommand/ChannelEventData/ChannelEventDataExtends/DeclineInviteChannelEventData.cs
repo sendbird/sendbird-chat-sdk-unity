@@ -14,8 +14,10 @@ namespace Sendbird.Chat
         [Serializable]
         private class DataProperties
         {
+#pragma warning disable CS0649
             [JsonProperty("inviter")] internal readonly MemberDto inviter;
             [JsonProperty("invitee")] internal readonly MemberDto invitee;
+#pragma warning restore CS0649
         }
 
         internal override ChannelReceiveWsReceiveCommand.CategoryType CategoryType => ChannelReceiveWsReceiveCommand.CategoryType.DeclineInvite;

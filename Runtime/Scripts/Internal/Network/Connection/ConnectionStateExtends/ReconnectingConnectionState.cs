@@ -128,24 +128,24 @@ namespace Sendbird.Chat
             ClearConnectionRetryCount();
         }
 
-        private void OnWebSocketConnectResultHandler(WsClientConnectResultType inResultType, WsClientError inErrorNullable)
+        private void OnWebSocketConnectResultHandler(WsClientConnectResult inConnectResult)
         {
             if (isEnteredState == false)
                 return;
 
-            Logger.Info(Logger.CategoryType.Connection, $"ReconnectingConnectionState::OnWebSocketConnectResultHandler ResultType:{inResultType}");
-            switch (inResultType)
+            Logger.Info(Logger.CategoryType.Connection, $"ReconnectingConnectionState::OnWebSocketConnectResultHandler ResultType:{inConnectResult}");
+            switch (inConnectResult.resultType)
             {
-                case WsClientConnectResultType.Succeeded:
+                case WsClientConnectResult.ResultType.Succeeded:
                 {
                     ClearConnectionRetryCount();
                     return;
                 }
-                case WsClientConnectResultType.InvalidParams:
-                case WsClientConnectResultType.Terminated:
+                case WsClientConnectResult.ResultType.InvalidParams:
+                case WsClientConnectResult.ResultType.Terminated:
                 {
                     SbError error = null;
-                    if (inResultType == WsClientConnectResultType.InvalidParams)
+                    if (inConnectResult.resultType == WsClientConnectResult.ResultType.InvalidParams)
                     {
                         error = SbErrorCodeExtension.CreateInvalidParameterError("UserId or WsHostUrl");
                     }
@@ -160,6 +160,9 @@ namespace Sendbird.Chat
                 }
                 default:
                 {
+                    Logger.Warning(Logger.CategoryType.Connection, $"ReconnectingConnectionState::OnWebSocketConnectResultHandler " +
+                                                                   $"ResultMessage:{inConnectResult.resultMessage} NativeErrorCode:{inConnectResult.nativeErrorCode}");
+
                     if (CanConnectionRetry())
                     {
                         IncreaseConnectionRetryCount();
@@ -193,12 +196,12 @@ namespace Sendbird.Chat
             WsClientStateType wsClientStateType = _commandRouterRef.GetWsClientStateType();
             if (wsClientStateType == WsClientStateType.Connecting || wsClientStateType == WsClientStateType.Open)
             {
-                void OnCloseResultHandler(WsClientCloseResultType inWsClientCloseResultType)
+                void OnCloseResultHandler(WsClientCloseResult inWsClientCloseResult)
                 {
                     if (isEnteredState == false)
                         return;
 
-                    Logger.Info(Logger.CategoryType.Connection, $"ReconnectingConnectionState::ConnectWebSocketAfterClose Close ResultType:{inWsClientCloseResultType}");
+                    Logger.Info(Logger.CategoryType.Connection, $"ReconnectingConnectionState::ConnectWebSocketAfterClose Close ResultType:{inWsClientCloseResult.resultType}");
                     _commandRouterRef.ConnectWs(_connectingWsHost, _connectingUserId, _connectingAuthToken, _connectingSessionKey, OnWebSocketConnectResultHandler);
                 }
 

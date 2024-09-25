@@ -40,7 +40,7 @@ namespace Sendbird.Chat
             SbLogLevel = inLogLevel;
             if (string.IsNullOrEmpty(inAppVersion))
             {
-                AppVersion = UnityEngine.Application.version;
+                AppVersion = string.Empty;
             }
             else
             {

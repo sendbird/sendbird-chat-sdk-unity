@@ -81,8 +81,10 @@ namespace Sendbird.Chat
         [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
+#pragma warning disable CS0649
             [JsonProperty("messages")] private readonly List<JObject> _messageJObjects;
             [JsonProperty("is_continuous_messages")] internal readonly bool? isContinuousMessages;
+#pragma warning restore CS0649
 
             internal List<BaseMessageDto> BaseMessageDtos { get; private set; }
 
