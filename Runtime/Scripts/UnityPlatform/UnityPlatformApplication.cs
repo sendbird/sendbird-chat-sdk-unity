@@ -9,7 +9,7 @@ namespace Sendbird.Chat
 {
     internal class UnityPlatformApplication : IPlatformApplication
     {
-        string IPlatformApplication.SdkVersion => "4.0.0";
+        string IPlatformApplication.SdkVersion => "4.0.1";
         string IPlatformApplication.PlatformName => "Unity";
         string IPlatformApplication.PlatformVersion => Application.unityVersion;
         string IPlatformApplication.OsName => Application.platform.ToString();

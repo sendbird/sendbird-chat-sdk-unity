@@ -1,3 +1,4 @@
+#if UNITY_WEBGL && !UNITY_EDITOR
 using System;
 using System.Net;
 
@@ -155,3 +156,5 @@ namespace Sendbird.Chat
         }
     }
 }
+
+#endif // #if UNITY_WEBGL && !UNITY_EDITOR

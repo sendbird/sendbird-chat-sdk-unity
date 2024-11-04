@@ -1,5 +1,9 @@
 # Change Log
 
+## 4.0.1 (Nov 4, 2024)
+### Features
+- Fixed an issue where build failed on the Windows platform
+
 ## 4.0.0 (Sep 25, 2024)
 ### Features
 - Added support for WebGL

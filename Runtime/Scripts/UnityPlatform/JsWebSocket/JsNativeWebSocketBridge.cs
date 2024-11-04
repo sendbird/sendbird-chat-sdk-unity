@@ -1,3 +1,4 @@
+#if UNITY_WEBGL && !UNITY_EDITOR
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -123,3 +124,5 @@ namespace Sendbird.Chat
         }
     }
 }
+
+#endif //#if UNITY_WEBGL && !UNITY_EDITOR
