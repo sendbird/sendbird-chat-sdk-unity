@@ -1,7 +1,4 @@
-// 
-//  Copyright (c) 2022 Sendbird, Inc.
-// 
-
+#if UNITY_WEBGL && !UNITY_EDITOR
 namespace Sendbird.Chat
 {
     internal enum JsWebSocketStateType
@@ -13,3 +10,5 @@ namespace Sendbird.Chat
         Closed,
     }
 }
+
+#endif //#if UNITY_WEBGL && !UNITY_EDITOR
