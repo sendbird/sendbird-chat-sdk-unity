@@ -22,9 +22,8 @@ namespace Sendbird.Chat
 
             internal Request(string inBlockerUserId, string inTargetUserId, ResultHandler inResultHandler)
             {
-                inBlockerUserId = WebUtility.UrlEncode(inBlockerUserId);
-                inTargetUserId = WebUtility.UrlEncode(inTargetUserId);
-                Url = $"{USERS_PREFIX_URL}/{inBlockerUserId}/block";
+                string encodedBlockerUserId = WebUtility.UrlEncode(inBlockerUserId);
+                Url = $"{USERS_PREFIX_URL}/{encodedBlockerUserId}/block";
 
                 resultHandler = inResultHandler;
                 ResponseType = typeof(Response);

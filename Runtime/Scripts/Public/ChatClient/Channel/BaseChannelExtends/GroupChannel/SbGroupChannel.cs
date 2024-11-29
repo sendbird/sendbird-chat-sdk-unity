@@ -475,5 +475,29 @@ namespace Sendbird.Chat
         {
             return CreateMessageCollectionInternal(inParams);
         }
+
+        /// <summary>
+        /// Requests a setting that decides which push notification for the current user to receive in the group channel.
+        /// </summary>
+        /// <param name="inCompletionHandler"></param>
+        /// <returns></returns>
+        /// @since 4.1.0
+        public void GetMyPushTriggerOption(SbGroupChannelGetMyPushTriggerOptionHandler inCompletionHandler)
+        {
+            GetMyPushTriggerOptionInternal(inCompletionHandler);
+        }
+
+        /// <summary>
+        /// Changes a setting that decides which push notification for the current user to receive in the group channel.
+        /// If a value of option is .Default, a push trigger option in this group channel follows a push trigger option of the current user. It is related with SendbirdChat SetPushTriggerOption.
+        /// </summary>
+        /// <param name="inGroupChannelPushTriggerOption"></param>
+        /// <param name="inCompletionHandler"></param>
+        /// <returns></returns>
+        /// @since 4.1.0
+        public void SetMyPushTriggerOption(SbGroupChannelPushTriggerOption inGroupChannelPushTriggerOption, SbErrorHandler inCompletionHandler)
+        {
+            SetMyPushTriggerOptionInternal(inGroupChannelPushTriggerOption, inCompletionHandler);
+        }
     }
 }
