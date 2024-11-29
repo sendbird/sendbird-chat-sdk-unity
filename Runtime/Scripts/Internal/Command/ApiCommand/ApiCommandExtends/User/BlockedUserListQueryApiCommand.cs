@@ -15,8 +15,8 @@ namespace Sendbird.Chat
         {
             internal Request(string inToken, int inLimit, string inUserId, List<string> inUserIds,  ResultHandler inResultHandler)
             {
-                inUserId = WebUtility.UrlEncode(inUserId);
-                Url = $"{USERS_PREFIX_URL}/{inUserId}/block";
+                string encodedUserId = WebUtility.UrlEncode(inUserId);
+                Url = $"{USERS_PREFIX_URL}/{encodedUserId}/block";
                 
                 ResponseType = typeof(Response);
                 resultHandler = inResultHandler;

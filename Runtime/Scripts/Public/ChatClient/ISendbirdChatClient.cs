@@ -328,5 +328,20 @@ namespace Sendbird.Chat
         /// <param name="inCompletionHandler"></param>
         /// @since 4.0.0
         void GetDoNotDisturb(SbDoNotDisturbHandler inCompletionHandler);
+        
+        /// <summary>
+        /// Requests a setting that decides which push notification for the current user to receive in all the group channel.
+        /// </summary>
+        /// <param name="inCompletionHandler"></param>
+        /// @since 4.1.0
+        void GetPushTriggerOption(SbPushTriggerOptionHandler inCompletionHandler);
+        
+        /// <summary>
+        /// Changes a setting that decides which push notification for the current user to receive in all the group channel.
+        /// </summary>
+        /// <param name="inPushTriggerOption"></param>
+        /// <param name="inCompletionHandler"></param>
+        /// /// @since 4.1.0
+        void SetPushTriggerOption(SbPushTriggerOption inPushTriggerOption, SbErrorHandler inCompletionHandler);
     }
 }

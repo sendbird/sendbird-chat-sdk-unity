@@ -2,9 +2,7 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Net;
-using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
@@ -14,9 +12,9 @@ namespace Sendbird.Chat
         {
             internal Request(string inBlockerUserId, string inTargetUserId, ResultHandler inResultHandler)
             {
-                inBlockerUserId = WebUtility.UrlEncode(inBlockerUserId);
-                inTargetUserId = WebUtility.UrlEncode(inTargetUserId);
-                Url = $"{USERS_PREFIX_URL}/{inBlockerUserId}/block/{inTargetUserId}";
+                string encodedBlockerUserId = WebUtility.UrlEncode(inBlockerUserId);
+                string encodedTargetUserId = WebUtility.UrlEncode(inTargetUserId);
+                Url = $"{USERS_PREFIX_URL}/{encodedBlockerUserId}/block/{encodedTargetUserId}";
                 
                 resultHandler = inResultHandler;
             }

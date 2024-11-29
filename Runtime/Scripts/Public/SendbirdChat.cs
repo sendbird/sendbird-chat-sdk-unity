@@ -429,6 +429,27 @@ namespace Sendbird.Chat
         }
 
         /// <summary>
+        /// Requests a setting that decides which push notification for the current user to receive in all the group channel.
+        /// </summary>
+        /// <param name="inCompletionHandler"></param>
+        /// @since 4.1.0
+        public static void GetPushTriggerOption(SbPushTriggerOptionHandler inCompletionHandler)
+        {
+            _sendbirdChatClient.GetPushTriggerOption(inCompletionHandler);
+        }
+
+        /// <summary>
+        /// Changes a setting that decides which push notification for the current user to receive in all the group channel.
+        /// </summary>
+        /// <param name="inPushTriggerOption"></param>
+        /// <param name="inCompletionHandler"></param>
+        /// /// @since 4.1.0
+        public static void SetPushTriggerOption(SbPushTriggerOption inPushTriggerOption, SbErrorHandler inCompletionHandler)
+        {
+            _sendbirdChatClient.SetPushTriggerOption(inPushTriggerOption, inCompletionHandler);
+        }
+
+        /// <summary>
         /// Sets the log level. The log level is defined by SbLogLevel.
         /// </summary>
         /// <param name="inLogLevel"></param>

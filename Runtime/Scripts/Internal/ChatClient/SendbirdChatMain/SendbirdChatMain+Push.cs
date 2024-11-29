@@ -55,5 +55,43 @@ namespace Sendbird.Chat
         {
             ChatMainContext.PushManager.GetDoNotDisturb(inCompletionHandler);
         }
+
+        internal void GetPushTriggerOption(SbPushTriggerOptionHandler inCompletionHandler)
+        {
+            if (inCompletionHandler == null)
+                return;
+
+            void OnCompletionHandler(ApiCommandAbstract.Response inResponse, SbError inError, bool inIsCanceled)
+            {
+                if (inResponse is GetPushTriggerOptionApiCommand.Response response)
+                {
+                    inCompletionHandler.Invoke(response.GroupChannelPushTriggerOptionNullable, inError);
+                    return;
+                }
+
+                inCompletionHandler.Invoke(inPushTriggerOption: null, inError);
+            }
+
+            GetPushTriggerOptionApiCommand.Request apiCommand = new GetPushTriggerOptionApiCommand.Request(
+                ChatMainContext.CurrentUserId, OnCompletionHandler);
+
+            ChatMainContext.CommandRouter.RequestApiCommand(apiCommand);
+        }
+
+        internal void SetPushTriggerOption(SbPushTriggerOption inPushTriggerOption, SbErrorHandler inCompletionHandler)
+        {
+            if (inCompletionHandler == null)
+                return;
+
+            void OnCompletionHandler(ApiCommandAbstract.Response inResponse, SbError inError, bool inIsCanceled)
+            {
+                inCompletionHandler.Invoke(inError);
+            }
+
+            SetPushTriggerOptionApiCommand.Request apiCommand = new SetPushTriggerOptionApiCommand.Request(
+                ChatMainContext.CurrentUserId, inPushTriggerOption, OnCompletionHandler);
+
+            ChatMainContext.CommandRouter.RequestApiCommand(apiCommand);
+        }
     }
 }

@@ -41,6 +41,9 @@ namespace Sendbird.Chat
 
     /// @since 4.0.0
     public delegate void SbGroupChannelListHandler(IReadOnlyList<SbGroupChannel> inGroupChannels, SbError inError);
+    
+    /// @since 4.1.0
+    public delegate void SbGroupChannelGetMyPushTriggerOptionHandler(SbGroupChannelPushTriggerOption? inMyPushTriggerOption, SbError inError);
 
     /// @since 4.0.0
     public delegate void SbMemberListHandler(IReadOnlyList<SbMember> inMembers, SbError inError);
@@ -71,6 +74,9 @@ namespace Sendbird.Chat
 
     /// @since 4.0.0
     public delegate void SbOpenChannelListHandler(IReadOnlyList<SbOpenChannel> inOpenChannels, SbError inError);
+    
+    /// @since 4.1.0
+    public delegate void SbPushTriggerOptionHandler(SbPushTriggerOption? inPushTriggerOption, SbError inError);
 
     /// @since 4.0.0
     public delegate void SbPushTemplateHandler(string inTemplateName, SbError inError);
