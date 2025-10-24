@@ -1,5 +1,11 @@
 # Change Log
 
+## 4.1.1 (Oct 24, 2025)
+### Features
+- Added `SetPushTriggerOption` to `SendbirdChatClient`
+
+### Bug Fixes
+- Fixed an issue with `SendbirdChat.BlockUser` where 'User not found error' occurs due to URL encoding
 ## 4.1.0 (Nov 29, 2024)
 ### Features
 - Added `SetPushTriggerOption` to `SendbirdChatClient`
