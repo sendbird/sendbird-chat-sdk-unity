@@ -392,13 +392,14 @@ namespace Sendbird.Chat
                 
 #if UNITY_WEBGL
                 uriStringBuilder.Append($"&{ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Name}={ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Value}");
+#else
+                uriStringBuilder.Append($"&{ConnectionHeaders.USER_AGENT.Name}={ConnectionHeaders.USER_AGENT.Value}");
 #endif
             }
 
             WsClientConnectParams wsClientConnectParams = new WsClientConnectParams(uriStringBuilder.ToString());
             {
 #if !UNITY_WEBGL
-                wsClientConnectParams.CustomHeaders.Add(ConnectionHeaders.USER_AGENT.Name, ConnectionHeaders.USER_AGENT.Value);
                 wsClientConnectParams.CustomHeaders.Add(ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Name, ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Value);
 #endif
 

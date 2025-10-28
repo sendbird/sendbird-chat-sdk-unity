@@ -1,11 +1,11 @@
 {
   "name": "com.sendbird.chat",
   "displayName": "SendbirdChat",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "documentationUrl": "https://github.com/sendbird/sendbird-chat-sdk-unity",
   "changelogUrl": "https://github.com/sendbird/sendbird-chat-sdk-unity/blob/master/CHANGELOG.md",
   "licensesUrl": "https://github.com/sendbird/sendbird-chat-sdk-unity/blob/master/LICENSE.md",
-  "description": "The Sendbird Chat SDK for Unity allows you to add real-time chat into your client app with minimal effort. Sendbird offers a feature rich, scalable, and proven chat solution depended on by companies like Reddit, Hinge, PubG and Paytm.",
+  "description": "The Sendbird Chat SDK for Unity allows you to add real-time chat into your client app with minimal effort. Sendbird offers a feature rich, scalable, and proven chat solution.",
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "2.0.0"
   },
