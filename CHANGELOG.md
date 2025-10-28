@@ -10,6 +10,16 @@
 ### Bug Fixes
 - Fixed an issue with `SendbirdChat.BlockUser` where 'User not found error' occurs due to URL encoding
 
+## 4.1.0 (Nov 29, 2024)
+### Features
+- Added `SetPushTriggerOption` to `SendbirdChatClient`
+- Added `GetPushTriggerOption` to `SendbirdChatClient`
+- Added `SetMyPushTriggerOption` to `SbGroupChannel`
+- Added `GetMyPushTriggerOption` to `SbGroupChannel`
+- Added `SbPushTriggerOption`
+### Bug Fixes
+- Fixed an issue with `SendbirdChat.BlockUser` where 'User not found error' occurs due to URL encoding
+
 ## 4.0.1 (Nov 4, 2024)
 ### Bug Fixes
 - Fixed an issue where build failed on the Windows platform
