@@ -1,5 +1,9 @@
 # Change Log
 
+## 4.1.2 (Nov 3, 2025)
+### Improvements
+- Removed unnecessary URL encoding from SB-SDK-User-Agent header
+
 ## 4.1.1 (Oct 28, 2025)
 ### Bug Fixes
 - Resolved WebSocket connection failure due to User-Agent header on .NET Framework
