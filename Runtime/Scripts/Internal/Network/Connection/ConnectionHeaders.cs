@@ -40,7 +40,7 @@ namespace Sendbird.Chat
                                                                        $"main_sdk_info=chat/{SendbirdChatMainContext.PLATFORM_NAME.ToLower()}/{SendbirdChatMainContext.SDK_VERSION}" +
                                                                        $"&device_os_platform={SendbirdChatMainContext.OS_NAME.ToLower()}" +
                                                                        $"&os_version={SendbirdChatMainContext.OS_VERSION}" +
-                                                                       $"&platform_version={SendbirdChatMainContext.PLATFORM_VERSION}", inApplyUrlEncode: true);
+                                                                       $"&platform_version={SendbirdChatMainContext.PLATFORM_VERSION}");
 
         internal static readonly Header ACCEPT = new Header("Accept", MimeType.APPLICATION_JSON);
         internal static readonly TimestampHeader REQUEST_SENT_TIMESTAMP = new TimestampHeader("Request-Sent-Timestamp");
