@@ -11,7 +11,7 @@ namespace Sendbird.Chat
     {
         // NOTE: This version is automatically updated by the PublishPackage workflow during deployment.
         // Only update manually when making releases outside of the automated workflow.
-        string IPlatformApplication.SdkVersion => "4.1.2";
+        string IPlatformApplication.SdkVersion => "4.1.3";
         string IPlatformApplication.PlatformName => "Unity";
         string IPlatformApplication.PlatformVersion => Application.unityVersion;
         string IPlatformApplication.OsName => Application.platform.ToString();

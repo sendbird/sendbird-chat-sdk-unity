@@ -142,13 +142,39 @@ namespace Sendbird.Chat
 
             try
             {
-                return JObjectToMessageDto(JObject.Parse(inJsonString));
+                return JsonStringToMessageDtoDirectDeserialize(inJsonString);
             }
             catch (Exception exception)
             {
                 Logger.Warning(Logger.CategoryType.Command, $"JsonStringToMessageDto invalid format json:{inJsonString} exception:{exception.Message}");
                 return null;
             }
+        }
+
+        private static BaseMessageDto JsonStringToMessageDtoDirectDeserialize(string inJsonString)
+        {
+            string typeString = NewtonsoftJsonExtension.ExtractTypeField(inJsonString);
+            if (string.IsNullOrEmpty(typeString))
+                return null;
+
+            WsCommandType wsCommandType = WsCommandTypeExtension.JsonNameToType(typeString);
+            if (wsCommandType == WsCommandType.UserMessage || wsCommandType == WsCommandType.UpdateUserMessage)
+            {
+                return UserMessageDto.DeserializeFromJson(inJsonString);
+            }
+
+            if (wsCommandType == WsCommandType.FileMessage || wsCommandType == WsCommandType.UpdateFileMessage)
+            {
+                return FileMessageDto.DeserializeFromJson(inJsonString);
+            }
+
+            if (wsCommandType == WsCommandType.AdminMessage || wsCommandType == WsCommandType.UpdateAdminMessage)
+            {
+                return AdminMessageDto.DeserializeFromJson(inJsonString);
+            }
+
+            Logger.Warning(Logger.CategoryType.Command, $"Invalid message type:{typeString} json:{inJsonString}");
+            return null;
         }
 
         internal static BaseMessageDto JObjectToMessageDto(JObject inJObject)

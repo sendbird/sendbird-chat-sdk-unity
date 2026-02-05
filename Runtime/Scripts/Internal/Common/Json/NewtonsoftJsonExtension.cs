@@ -1,11 +1,11 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
 using System;
+using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace Sendbird.Chat
 {
@@ -95,10 +95,46 @@ namespace Sendbird.Chat
             return inDefaultIfFailed;
         }
 
-        private static void OnSerializerSettingsErrorHandler(object inSender, ErrorEventArgs inErrorEventArgs)
+        private static void OnSerializerSettingsErrorHandler(object inSender, Newtonsoft.Json.Serialization.ErrorEventArgs inErrorEventArgs)
         {
             Logger.Warning(Logger.CategoryType.Json, $"OnSerializerSettingsErrorHandler exception:{inErrorEventArgs.ErrorContext.Error.Message}");
             inErrorEventArgs.ErrorContext.Handled = true;
+        }
+
+        internal static JObject ParseToJObject(string inJsonString)
+        {
+            if (string.IsNullOrEmpty(inJsonString))
+            {
+                return null;
+            }
+
+            return JObject.Parse(inJsonString);
+        }
+
+        internal static string ExtractTypeField(string inJsonString)
+        {
+            if (string.IsNullOrEmpty(inJsonString))
+            {
+                return null;
+            }
+
+            using (StringReader stringReader = new StringReader(inJsonString))
+            using (JsonTextReader jsonReader = new JsonTextReader(stringReader))
+            {
+                while (jsonReader.Read())
+                {
+                    if (jsonReader.TokenType == JsonToken.PropertyName &&
+                        string.Equals(jsonReader.Value as string, "type", StringComparison.Ordinal))
+                    {
+                        if (jsonReader.Read() && jsonReader.TokenType == JsonToken.String)
+                        {
+                            return jsonReader.Value as string;
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
