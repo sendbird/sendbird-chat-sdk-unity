@@ -119,6 +119,7 @@ namespace Sendbird.Chat
 
                 if (_forceAbortIfRequesting)
                 {
+                    webRequest.Dispose();
                     inRequestParams.InvokeResult(HttpResultType.Canceled, null);
                     yield break;
                 }
@@ -141,6 +142,7 @@ namespace Sendbird.Chat
                         goto SEND_WEB_REQUEST_START_LABEL;
                     }
 
+                    webRequest.Dispose();
                     inRequestParams.InvokeResult(HttpResultType.Failed, webRequest.error);
                     yield break;
                 }

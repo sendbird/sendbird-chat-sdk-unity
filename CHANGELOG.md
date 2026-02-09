@@ -1,5 +1,10 @@
 # Change Log
 
+## 4.1.4 (Feb 10, 2026)
+### Bug Fixes
+- Fixed SuperGroupChannel event handling for user join and leave
+- Fixed JSON deserialization performance
+
 ## 4.1.3 (Feb 4, 2026)
 ### Bug Fixes
 - Fixed WebGL memory issue by optimizing JSON parsing for message deserialization

@@ -78,6 +78,20 @@ namespace Sendbird.Chat
             return default;
         }
 
+        internal static object ToObjectIgnoreException(this JObject inJObject, Type inType)
+        {
+            try
+            {
+                return inJObject.ToObject(inType, JSON_SERIALIZER);
+            }
+            catch (Exception exception)
+            {
+                Logger.Warning(Logger.CategoryType.Json, $"DeserializeObject exception:{exception.Message}");
+            }
+
+            return default;
+        }
+
         internal static TObject ToPropertyValueIgnoreException<TObject>(this JObject inJObject, string inPropertyName, TObject inDefaultIfFailed = default)
         {
             try
@@ -101,14 +115,23 @@ namespace Sendbird.Chat
             inErrorEventArgs.ErrorContext.Handled = true;
         }
 
-        internal static JObject ParseToJObject(string inJsonString)
+        internal static JObject ParseToJObjectIgnoreException(string inJsonString)
         {
             if (string.IsNullOrEmpty(inJsonString))
             {
                 return null;
             }
 
-            return JObject.Parse(inJsonString);
+            try
+            {
+                return JObject.Parse(inJsonString);
+            }
+            catch (Exception exception)
+            {
+                Logger.Warning(Logger.CategoryType.Json, $"ParseToJObjectIgnoreException exception:{exception.Message}");
+            }
+
+            return null;
         }
 
         internal static string ExtractTypeField(string inJsonString)
@@ -117,7 +140,7 @@ namespace Sendbird.Chat
             {
                 return null;
             }
-
+            
             using (StringReader stringReader = new StringReader(inJsonString))
             using (JsonTextReader jsonReader = new JsonTextReader(stringReader))
             {

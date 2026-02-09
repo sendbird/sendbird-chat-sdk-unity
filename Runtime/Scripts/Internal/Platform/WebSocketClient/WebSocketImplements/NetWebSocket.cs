@@ -130,7 +130,7 @@ namespace Sendbird.Chat
                 return;
             }
 
-            ArraySegment<byte> buffer = WebSocket.CreateClientBuffer(1024, 1024);
+            ArraySegment<byte> buffer = WebSocket.CreateClientBuffer(65536, 65536);
             if (buffer.Array == null)
             {
                 inErrorHandler?.Invoke(new WsClientError(WsClientErrorType.CreateReceiveBufferFailed));
