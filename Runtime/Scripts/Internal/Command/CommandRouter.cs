@@ -173,7 +173,7 @@ namespace Sendbird.Chat
             }
 
             string responseJsonString = inResponseOrError;
-            SbError error = TryConvertJsonToError(responseJsonString);
+            JObject jObject = ParseJsonAndCheckError(responseJsonString, out SbError error);
             if (error != null)
             {
                 Logger.Warning(Logger.CategoryType.Command, $"OnRequestResultHandler type:{request.GetType()}\n ErrorCode:{error.ErrorCode}\n ErrorMessage:{error.ErrorMessage}");
@@ -198,7 +198,7 @@ namespace Sendbird.Chat
             Type responseType = request.ResponseType;
             if (responseType != null)
             {
-                responseAbstract = NewtonsoftJsonExtension.DeserializeObjectIgnoreException(responseJsonString, responseType) as ApiCommandAbstract.Response;
+                responseAbstract = jObject.ToObjectIgnoreException(responseType) as ApiCommandAbstract.Response;
 
                 if (responseAbstract == null)
                 {
@@ -249,11 +249,14 @@ namespace Sendbird.Chat
             return requestParams;
         }
 
-        private SbError TryConvertJsonToError(string inJsonString)
+        private JObject ParseJsonAndCheckError(string inJsonString, out SbError inOutError)
         {
+            inOutError = null;
+
             if (string.IsNullOrEmpty(inJsonString))
             {
-                return new SbError(SbErrorCode.MalformedData, $"Response string is null or empty.");
+                inOutError = new SbError(SbErrorCode.MalformedData, $"Response string is null or empty.");
+                return null;
             }
 
             JObject jObject = null;
@@ -263,17 +266,18 @@ namespace Sendbird.Chat
             }
             catch (Exception exception)
             {
-                Logger.Warning(Logger.CategoryType.Http, $"TryConvertJsonToError invalid format json:{inJsonString} exception:{exception.Message}");
-                return new SbError(SbErrorCode.MalformedData, $"Invalid response:{inJsonString}.");
+                Logger.Warning(Logger.CategoryType.Http, $"ParseJsonAndCheckError invalid format json:{inJsonString} exception:{exception.Message}");
+                inOutError = new SbError(SbErrorCode.MalformedData, $"Invalid response:{inJsonString}.");
+                return null;
             }
 
             ErrorApiCommand.Response errorCommand = ErrorApiCommand.Response.TryConvertJsonToResponse(jObject);
             if (errorCommand != null && errorCommand.IsError())
             {
-                return new SbError(errorCommand.GetErrorCode(), errorCommand.GetMessage());
+                inOutError = new SbError(errorCommand.GetErrorCode(), errorCommand.GetMessage());
             }
 
-            return null;
+            return jObject;
         }
 
         internal void ConnectWs(string inWsHost, string inUserId, string inAccessToken = null, string inSessionKey = null, WebSocketClient.ConnectResultDelegate inResultHandler = null)

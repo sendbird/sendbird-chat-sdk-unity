@@ -2,6 +2,7 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
+using System.Diagnostics;
 using System.Text;
 
 namespace Sendbird.Chat
@@ -46,7 +47,8 @@ namespace Sendbird.Chat
                 _logger.Warning(_tempStringBuilder.ToString());
             }
         }
-
+        
+        [Conditional("SB_LOG_INFO_BELOW")]
         internal static void Info(CategoryType inCategoryType, string inMessage)
         {
             if (InternalLogLevel <= InternalLogLevel.Info)
@@ -57,6 +59,7 @@ namespace Sendbird.Chat
             }
         }
 
+        [Conditional("SB_LOG_INFO_BELOW")]
         internal static void Debug(CategoryType inCategoryType, string inMessage)
         {
             if (InternalLogLevel <= InternalLogLevel.Debug)
@@ -67,6 +70,7 @@ namespace Sendbird.Chat
             }
         }
 
+        [Conditional("SB_LOG_INFO_BELOW")]
         internal static void Verbose(CategoryType inCategoryType, string inMessage)
         {
             if (InternalLogLevel <= InternalLogLevel.Verbose)

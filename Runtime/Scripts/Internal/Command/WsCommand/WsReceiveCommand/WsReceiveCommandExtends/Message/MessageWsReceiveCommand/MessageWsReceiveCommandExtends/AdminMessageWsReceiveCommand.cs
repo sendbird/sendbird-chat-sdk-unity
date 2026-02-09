@@ -3,6 +3,7 @@
 // 
 
 using System;
+using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
@@ -13,10 +14,14 @@ namespace Sendbird.Chat
 
         internal static AdminMessageWsReceiveCommand DeserializeFromJson(string inJsonString)
         {
-            AdminMessageWsReceiveCommand wsReceiveCommand = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<AdminMessageWsReceiveCommand>(inJsonString);
+            JObject jObject = NewtonsoftJsonExtension.ParseToJObjectIgnoreException(inJsonString);
+            if (jObject == null)
+                return null;
+
+            AdminMessageWsReceiveCommand wsReceiveCommand = jObject.ToObjectIgnoreException<AdminMessageWsReceiveCommand>();
             if (wsReceiveCommand != null)
             {
-                wsReceiveCommand.BaseMessageDto = AdminMessageDto.DeserializeFromJson(inJsonString);
+                wsReceiveCommand.BaseMessageDto = AdminMessageDto.DeserializeFromJson(jObject);
             }
 
             return wsReceiveCommand;

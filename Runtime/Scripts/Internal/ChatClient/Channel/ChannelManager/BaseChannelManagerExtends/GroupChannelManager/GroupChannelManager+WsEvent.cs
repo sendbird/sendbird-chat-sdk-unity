@@ -566,14 +566,23 @@ namespace Sendbird.Chat
             foreach (MemberDto memberDto in inJoinEventData.MemberDtos)
             {
                 SbMember member = null;
-                if (inGroupChannel.IsSuper == false)
+                if (!inGroupChannel.IsExclusive && !inGroupChannel.IsSuper && !inGroupChannel.IsBroadcast)
                 {
                     member = inGroupChannel.AddMember(memberDto, inJoinEventData.timestamp);
                     inGroupChannel.UpdateJoinedMemberCount();
                 }
+                else
+                {
+                    member = new SbMember(memberDto, chatMainContextRef);
+                }
 
                 if (member != null)
                 {
+                    if (member.UserId == chatMainContextRef.CurrentUserId)
+                    {
+                        inGroupChannel.MyMemberState = SbMemberState.Joined;
+                    }
+
                     channelHandlersById.ForEachByValue(inGroupHandler => { inGroupHandler.OnUserJoined?.Invoke(inGroupChannel, member); });
                     chatMainContextRef.CollectionManager.OnUserJoined(inGroupChannel, member);
                 }
@@ -590,14 +599,19 @@ namespace Sendbird.Chat
 
             SbMember member = inGroupChannel.FindMember(inLeaveEventData.MemberDto.UserId);
             if (member == null)
-                return;
+            {
+                if (inGroupChannel.IsExclusive || inGroupChannel.IsSuper || inGroupChannel.IsBroadcast)
+                    member = new SbMember(inLeaveEventData.MemberDto, chatMainContextRef);
+                else
+                    return;
+            }
 
             if (inLeaveEventData.BaseChannelDto is GroupChannelDto groupChannelDto)
             {
                 inGroupChannel.ResetMembersFromChannelDto(groupChannelDto);
             }
 
-            if (inGroupChannel.IsSuper)
+            if (inGroupChannel.IsExclusive || inGroupChannel.IsSuper || inGroupChannel.IsBroadcast)
             {
                 inGroupChannel.UpdateMemberCount(inLeaveEventData);
             }
@@ -616,7 +630,8 @@ namespace Sendbird.Chat
                 inGroupChannel.JoinedAt = 0;
                 RemoveCachedChannelIfContains(inGroupChannel.Url);
             }
-            else if (inLeaveEventData.BaseChannelDto != null)
+            else if (!inGroupChannel.IsExclusive && !inGroupChannel.IsSuper && !inGroupChannel.IsBroadcast
+                     && inLeaveEventData.BaseChannelDto != null)
             {
                 inGroupChannel.ResetFromChannelDto(inLeaveEventData.BaseChannelDto);
             }
