@@ -1,30 +1,26 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
-
-using System;
-using Newtonsoft.Json.Linq;
+//
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal class UpdateUserMessageWsReceiveCommand : UpdateMessageWsReceiveCommandAbstract
     {
         internal UpdateUserMessageWsReceiveCommand() : base(WsCommandType.UpdateUserMessage) { }
 
-        internal static UpdateUserMessageWsReceiveCommand DeserializeFromJson(string inJsonString)
+        internal static UpdateUserMessageWsReceiveCommand DeserializeFromJson(string inJsonString, int inOffset = 0)
         {
-            JObject jObject = NewtonsoftJsonExtension.ParseToJObjectIgnoreException(inJsonString);
-            if (jObject == null)
+            StreamingMessageDtoReader.CommandFields commandFields = StreamingMessageDtoReader.Deserialize<UserMessageDto>(inJsonString, out UserMessageDto dto, inOffset);
+            if (dto == null)
                 return null;
 
-            UpdateUserMessageWsReceiveCommand wsReceiveCommand = jObject.ToObjectIgnoreException<UpdateUserMessageWsReceiveCommand>();
-            if (wsReceiveCommand != null)
-            {
-                wsReceiveCommand.BaseMessageDto = UserMessageDto.DeserializeFromJson(jObject);
-            }
-
-            return wsReceiveCommand;
+            UpdateUserMessageWsReceiveCommand command = new UpdateUserMessageWsReceiveCommand();
+            command.SetReqId(commandFields.reqId);
+            command.SetRequestId(commandFields.requestId);
+            command.SetUnreadMessageCountDto(commandFields.unreadMessageCountDto);
+            command.BaseMessageDto = dto;
+            command.SetOldValues(commandFields.oldValuesMentionType, commandFields.oldValuesMentionedUserIds);
+            return command;
         }
     }
 }

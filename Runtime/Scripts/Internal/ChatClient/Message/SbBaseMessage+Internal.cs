@@ -146,24 +146,25 @@ namespace Sendbird.Chat
                 }
             }
 
-            if (inBaseMessageDto.reactionDtos != null && 0 < inBaseMessageDto.reactionDtos.Count)
+            var reactionDtos = inBaseMessageDto.ReactionDtos;
+            if (reactionDtos != null && 0 < reactionDtos.Count)
             {
-                _reactions = new List<SbReaction>(inBaseMessageDto.reactionDtos.Count);
-                foreach (ReactionDto reactionDto in inBaseMessageDto.reactionDtos)
+                _reactions = new List<SbReaction>(reactionDtos.Count);
+                foreach (ReactionDto reactionDto in reactionDtos)
                 {
                     SbReaction reaction = new SbReaction(reactionDto);
                     _reactions.Add(reaction);
                 }
             }
 
-            if (inBaseMessageDto.ogMetaDataDto != null)
-                _ogMetaData = new SbOgMetaData(inBaseMessageDto.ogMetaDataDto);
+            if (inBaseMessageDto.OgMetaDataDto != null)
+                _ogMetaData = new SbOgMetaData(inBaseMessageDto.OgMetaDataDto);
 
             if (inBaseMessageDto.appleCriticalAlertOptionsDto != null)
                 _appleCriticalAlertOptions = new SbAppleCriticalAlertOptions(inBaseMessageDto.appleCriticalAlertOptionsDto);
 
-            if (inBaseMessageDto.threadInfoDto != null)
-                _threadInfo = new SbThreadInfo(inBaseMessageDto.threadInfoDto, chatMainContextRef);
+            if (inBaseMessageDto.ThreadInfoDto != null)
+                _threadInfo = new SbThreadInfo(inBaseMessageDto.ThreadInfoDto, chatMainContextRef);
         }
 
         private protected SbBaseMessage(SbBaseMessageCreateParams inBaseMessageCreateParams, SendbirdChatMainContext inChatMainContext,

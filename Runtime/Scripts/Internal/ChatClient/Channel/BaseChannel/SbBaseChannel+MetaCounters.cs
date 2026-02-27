@@ -58,16 +58,19 @@ namespace Sendbird.Chat
 
             void OnCompletionHandler(ApiCommandAbstract.Response inResponse, SbError inError, bool inIsCanceled)
             {
+                if (inError != null)
+                {
+                    inCompletionHandler?.Invoke(null, inError);
+                    return;
+                }
+
                 if (inResponse is GetMetaCountersApiCommand.Response getMetaCountersResponse)
                 {
                     inCompletionHandler?.Invoke(getMetaCountersResponse.MetaCounters, null);
                 }
                 else
                 {
-                    if (inError != null)
-                        inError = SbErrorCodeExtension.MALFORMED_DATA_ERROR;
-
-                    inCompletionHandler?.Invoke(null, inError);
+                    inCompletionHandler?.Invoke(null, SbErrorCodeExtension.MALFORMED_DATA_ERROR);
                 }
             }
 

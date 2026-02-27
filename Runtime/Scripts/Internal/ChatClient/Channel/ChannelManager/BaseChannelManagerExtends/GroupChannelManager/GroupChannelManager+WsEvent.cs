@@ -94,7 +94,9 @@ namespace Sendbird.Chat
                 if (baseMessageDto.mentionedUserDtos != null)
                     inGroupChannel.UpdateMembers(baseMessageDto.mentionedUserDtos);
 
+                JsonMemoryProfiler.TakeSnapshot("GroupChannel:BeforeCreateMessageInstance");
                 SbBaseMessage message = baseMessageDto.CreateMessageInstance(chatMainContextRef);
+                JsonMemoryProfiler.TakeSnapshot("GroupChannel:AfterCreateMessageInstance");
 
                 if (inGroupChannel.ShouldUpdateLsatMessage(message, baseMessageDto.forceUpdateLastMessage))
                 {
@@ -113,6 +115,7 @@ namespace Sendbird.Chat
 
                 if (inMessageWsReceiveCommand.IsCreatedFromCurrentDevice() == false)
                 {
+                    JsonMemoryProfiler.TakeSnapshot("GroupChannel:BeforeOnMessageReceived");
                     channelHandlersById.ForEachByValue(inHandler => { inHandler.OnMessageReceived?.Invoke(inGroupChannel, message); });
                     chatMainContextRef.CollectionManager.OnMessageReceived(inGroupChannel, message);
 

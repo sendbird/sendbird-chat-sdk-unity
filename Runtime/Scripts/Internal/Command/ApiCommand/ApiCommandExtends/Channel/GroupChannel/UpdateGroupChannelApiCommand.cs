@@ -90,7 +90,6 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
             internal GroupChannelDto GroupChannelDto { get; private set; }

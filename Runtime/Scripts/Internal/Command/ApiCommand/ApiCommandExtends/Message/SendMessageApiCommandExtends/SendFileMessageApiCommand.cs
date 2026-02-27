@@ -1,8 +1,7 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
@@ -13,19 +12,37 @@ namespace Sendbird.Chat
     {
         internal sealed class Request : ApiCommandAbstract.PostRequest
         {
-            [Serializable]
             private class Payload : SendMessageApiCommandAbstract.Payload
             {
-#pragma warning disable CS0649
-                [JsonProperty("url")] internal string fileUrl;
-                [JsonProperty("name")] internal string fileName;
-                [JsonProperty("type")] internal string mimeType;
-                [JsonProperty("size")] internal int? fileSize;
-                [JsonProperty("thumbnails")] internal List<ThumbnailDto> thumbnails;
-                [JsonProperty("require_auth")] internal bool requireAuth;
-#pragma warning restore CS0649
+                internal string fileUrl;
+                internal string fileName;
+                internal string mimeType;
+                internal int? fileSize;
+                internal List<ThumbnailDto> thumbnails;
+                internal bool requireAuth;
+
                 internal Payload(string inChannelUrl, string inRequestId, string inUserId, SbFileMessageCreateParams inParams)
                     : base(WsCommandType.FileMessage.ToJsonName(), inRequestId, inChannelUrl, inUserId, inParams) { }
+
+                protected override void WriteFields(JsonTextWriter inWriter)
+                {
+                    base.WriteFields(inWriter);
+                    JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "url", fileUrl);
+                    JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "name", fileName);
+                    JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "type", mimeType);
+                    JsonStreamingHelper.WriteNullableInt(inWriter, "size", fileSize);
+                    if (thumbnails != null)
+                    {
+                        inWriter.WritePropertyName("thumbnails");
+                        inWriter.WriteStartArray();
+                        foreach (ThumbnailDto thumbnailDto in thumbnails)
+                        {
+                            thumbnailDto.WriteToJson(inWriter);
+                        }
+                        inWriter.WriteEndArray();
+                    }
+                    JsonStreamingHelper.WritePropertyIfNotDefault(inWriter, "require_auth", requireAuth);
+                }
             }
 
             internal Request(string inRequestId, string inChannelUrl, SbChannelType inChannelType, string inUserId, SbFileMessageCreateParams inParams, bool inRequireAuth, List<ThumbnailDto> inThumbnailDtos, ResultHandler inResultHandler)
@@ -48,11 +65,10 @@ namespace Sendbird.Chat
                     }
                 }
 
-                ContentBody = NewtonsoftJsonExtension.SerializeObjectIgnoreException(payload);
+                ContentBody = payload.ToJsonString();
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
             internal FileMessageDto FileMessageDtoDto { get; private set; }

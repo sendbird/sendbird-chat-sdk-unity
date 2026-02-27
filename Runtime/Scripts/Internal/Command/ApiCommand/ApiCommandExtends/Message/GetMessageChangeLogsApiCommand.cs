@@ -2,11 +2,9 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
@@ -44,23 +42,55 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-            [JsonProperty("updated")] private readonly List<JObject> _updatedMessageJObjects = null;
-            [JsonProperty("deleted")] internal readonly List<DeletedMessageDto> deletedMessageDtos = null;
-            [JsonProperty("has_more")] internal readonly bool hasMore;
-            [JsonProperty("next")] internal readonly string token;
+            internal List<DeletedMessageDto> deletedMessageDtos;
+            internal bool hasMore;
+            internal string token;
             internal List<BaseMessageDto> UpdatedBaseMessageDtos { get; private set; }
 
             internal override void OnResponseAfterDeserialize(string inJsonString)
             {
-                if (_updatedMessageJObjects != null && 0 < _updatedMessageJObjects.Count)
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
                 {
-                    UpdatedBaseMessageDtos = new List<BaseMessageDto>(_updatedMessageJObjects.Count);
-                    foreach (JObject baseMessageJObject in _updatedMessageJObjects)
+                    ReadFromJsonReader(reader);
+                }
+            }
+
+            internal override void OnResponseAfterDeserialize(byte[] inResponseBytes)
+            {
+                if (inResponseBytes == null || inResponseBytes.Length == 0)
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inResponseBytes))
+                {
+                    ReadFromJsonReader(reader);
+                }
+            }
+
+            private void ReadFromJsonReader(JsonTextReader inReader)
+            {
+                inReader.Read();
+                if (inReader.TokenType != JsonToken.StartObject)
+                    return;
+
+                while (inReader.Read())
+                {
+                    if (inReader.TokenType == JsonToken.EndObject)
+                        break;
+
+                    string propName = inReader.Value as string;
+                    inReader.Read();
+                    switch (propName)
                     {
-                        UpdatedBaseMessageDtos.Add(BaseMessageDto.JObjectToMessageDto(baseMessageJObject));
+                        case "updated": UpdatedBaseMessageDtos = JsonStreamingHelper.ReadMessageDtoListDirect(inReader); break;
+                        case "deleted": deletedMessageDtos = DeletedMessageDto.ReadListFromJson(inReader); break;
+                        case "has_more": hasMore = JsonStreamingHelper.ReadBool(inReader); break;
+                        case "next": token = JsonStreamingHelper.ReadString(inReader); break;
+                        default: JsonStreamingHelper.SkipValue(inReader); break;
                     }
                 }
             }

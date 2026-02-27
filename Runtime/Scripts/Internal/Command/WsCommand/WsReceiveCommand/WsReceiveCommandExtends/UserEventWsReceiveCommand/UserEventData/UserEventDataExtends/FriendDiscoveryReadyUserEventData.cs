@@ -6,18 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
     [Serializable]
     internal class FriendDiscoveryReadyUserEventData : UserEventDataAbstract
     {
-        [Serializable]
-        private class DataProperties
-        {
-            [JsonProperty("friend_discoveries")] internal readonly List<UserDto> friendDiscoveryUserDtos = null;
-        }
-
         internal override UserEventWsReceiveCommand.CategoryType CategoryType => UserEventWsReceiveCommand.CategoryType.FriendDiscoveryReady;
 
         internal List<UserDto> FriendDiscoveryUserDtos { get; private set; }
@@ -27,10 +22,10 @@ namespace Sendbird.Chat
         {
             if (base.data != null)
             {
-                DataProperties dataProperties = base.data.ToObjectIgnoreException<DataProperties>();
-                if (dataProperties != null)
+                JToken friendDiscoveriesToken = base.data["friend_discoveries"];
+                if (friendDiscoveriesToken != null)
                 {
-                    FriendDiscoveryUserDtos = dataProperties.friendDiscoveryUserDtos;
+                    FriendDiscoveryUserDtos = UserDto.ReadUserDtoListFromJsonString(friendDiscoveriesToken.ToString(Formatting.None));
                 }
             }
         }

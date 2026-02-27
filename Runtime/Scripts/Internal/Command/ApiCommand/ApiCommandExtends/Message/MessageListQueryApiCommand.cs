@@ -1,12 +1,10 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
@@ -78,31 +76,51 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-#pragma warning disable CS0649
-            [JsonProperty("messages")] private readonly List<JObject> _messageJObjects;
-            [JsonProperty("is_continuous_messages")] internal readonly bool? isContinuousMessages;
-#pragma warning restore CS0649
-
+            internal bool? isContinuousMessages;
             internal List<BaseMessageDto> BaseMessageDtos { get; private set; }
 
             internal override void OnResponseAfterDeserialize(string inJsonString)
             {
-                if (_messageJObjects != null && 0 < _messageJObjects.Count)
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
                 {
-                    BaseMessageDtos = new List<BaseMessageDto>(_messageJObjects.Count);
-                    foreach (JObject messageJObject in _messageJObjects)
+                    ReadFromJsonReader(reader);
+                }
+            }
+
+            internal override void OnResponseAfterDeserialize(byte[] inResponseBytes)
+            {
+                if (inResponseBytes == null || inResponseBytes.Length == 0)
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inResponseBytes))
+                {
+                    ReadFromJsonReader(reader);
+                }
+            }
+
+            private void ReadFromJsonReader(JsonTextReader inReader)
+            {
+                inReader.Read();
+                if (inReader.TokenType != JsonToken.StartObject)
+                    return;
+
+                while (inReader.Read())
+                {
+                    if (inReader.TokenType == JsonToken.EndObject)
+                        break;
+
+                    string propName = inReader.Value as string;
+                    inReader.Read();
+                    switch (propName)
                     {
-                        if (messageJObject == null)
-                            continue;
-
-                        BaseMessageDto baseMessageDto = BaseMessageDto.JObjectToMessageDto(messageJObject);
-                        if (baseMessageDto == null)
-                            continue;
-
-                        BaseMessageDtos.Add(baseMessageDto);
+                        case "messages": BaseMessageDtos = JsonStreamingHelper.ReadMessageDtoListDirect(inReader); break;
+                        case "is_continuous_messages": isContinuousMessages = JsonStreamingHelper.ReadNullableBool(inReader); break;
+                        default: JsonStreamingHelper.SkipValue(inReader); break;
                     }
                 }
             }

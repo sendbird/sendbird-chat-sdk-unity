@@ -2,11 +2,9 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
@@ -51,53 +49,61 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-#pragma warning disable CS0649
-            [JsonProperty("prev_messages")] private readonly List<JObject> _prevMessageDtos;
-            [JsonProperty("next_messages")] private readonly List<JObject> _nextMessageDtos;
-            [JsonProperty("prev_has_more")] internal readonly bool prevHasMore;
-            [JsonProperty("next_has_more")] internal readonly bool nextHasMore;
-            [JsonProperty("is_huge_gap")] internal readonly bool isHugeGap;
-            [JsonProperty("is_continuous_prev_messages")] internal readonly bool isContinuousPrevMessages;
-            [JsonProperty("is_continuous_next_messages")] internal readonly bool isContinuousNextMessages;
-#pragma warning restore CS0649
-            
+            internal bool prevHasMore;
+            internal bool nextHasMore;
+            internal bool isHugeGap;
+            internal bool isContinuousPrevMessages;
+            internal bool isContinuousNextMessages;
             internal List<BaseMessageDto> PrevMessageDtos { get; private set; }
             internal List<BaseMessageDto> NextMessageDtos { get; private set; }
 
             internal override void OnResponseAfterDeserialize(string inJsonString)
             {
-                if (_prevMessageDtos != null && 0 < _prevMessageDtos.Count)
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
                 {
-                    PrevMessageDtos = new List<BaseMessageDto>(_prevMessageDtos.Count);
-                    foreach (JObject messageJObject in _prevMessageDtos)
-                    {
-                        if (messageJObject == null)
-                            continue;
-
-                        BaseMessageDto baseMessageDto = BaseMessageDto.JObjectToMessageDto(messageJObject);
-                        if (baseMessageDto == null)
-                            continue;
-
-                        PrevMessageDtos.Add(baseMessageDto);
-                    }
+                    ReadFromJsonReader(reader);
                 }
-                
-                if (_nextMessageDtos != null && 0 < _nextMessageDtos.Count)
+            }
+
+            internal override void OnResponseAfterDeserialize(byte[] inResponseBytes)
+            {
+                if (inResponseBytes == null || inResponseBytes.Length == 0)
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inResponseBytes))
                 {
-                    NextMessageDtos = new List<BaseMessageDto>(_nextMessageDtos.Count);
-                    foreach (JObject messageJObject in _nextMessageDtos)
+                    ReadFromJsonReader(reader);
+                }
+            }
+
+            private void ReadFromJsonReader(JsonTextReader reader)
+            {
+                reader.Read();
+                if (reader.TokenType != JsonToken.StartObject)
+                    return;
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonToken.EndObject)
+                        break;
+
+                    string propName = reader.Value as string;
+                    reader.Read();
+                    switch (propName)
                     {
-                        if (messageJObject == null)
-                            continue;
-
-                        BaseMessageDto baseMessageDto = BaseMessageDto.JObjectToMessageDto(messageJObject);
-                        if (baseMessageDto == null)
-                            continue;
-
-                        NextMessageDtos.Add(baseMessageDto);
+                        case "prev_messages": PrevMessageDtos = JsonStreamingHelper.ReadMessageDtoListDirect(reader); break;
+                        case "next_messages": NextMessageDtos = JsonStreamingHelper.ReadMessageDtoListDirect(reader); break;
+                        case "prev_has_more": prevHasMore = JsonStreamingHelper.ReadBool(reader); break;
+                        case "next_has_more": nextHasMore = JsonStreamingHelper.ReadBool(reader); break;
+                        case "is_huge_gap": isHugeGap = JsonStreamingHelper.ReadBool(reader); break;
+                        case "is_continuous_prev_messages": isContinuousPrevMessages = JsonStreamingHelper.ReadBool(reader); break;
+                        case "is_continuous_next_messages": isContinuousNextMessages = JsonStreamingHelper.ReadBool(reader); break;
+                        default: JsonStreamingHelper.SkipValue(reader); break;
                     }
                 }
             }

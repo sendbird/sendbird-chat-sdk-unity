@@ -1,5 +1,13 @@
 # Change Log
 
+## 4.2.0 (Feb 10, 2026)
+### Improvements
+- Improved JSON deserialization performance and reduced memory allocations
+- Reduced memory usage for API responses
+
+### Bug Fixes
+- Fixed WebSocket memory leak on WebGL platform
+
 ## 4.1.4 (Feb 10, 2026)
 ### Bug Fixes
 - Fixed SuperGroupChannel event handling for user join and leave

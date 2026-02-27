@@ -25,6 +25,14 @@ namespace Sendbird.Chat
             _removeChatMainBlockingCollection.Add(inSendbirdChatMain);
         }
 
+        internal void DisconnectAll()
+        {
+            foreach (SendbirdChatMain sendbirdChatMain in _sendbirdChatMains)
+            {
+                sendbirdChatMain.Disconnect();
+            }
+        }
+
         internal void StartAsyncProcessIfNotRunning()
         {
             PlatformModule.PlatformProvider.PlatformApplication.StartAsyncProcessIfNotRunning(this);

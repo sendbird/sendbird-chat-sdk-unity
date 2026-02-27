@@ -65,14 +65,13 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
             internal UserDto UserDto { get; private set; }
 
             internal override void OnResponseAfterDeserialize(string inJsonString)
             {
-                UserDto = UserDto.DeserializeFromJson(inJsonString);
+                UserDto = UserDto.DeserializeUserDtoFromJson(inJsonString);
             }
         }
     }

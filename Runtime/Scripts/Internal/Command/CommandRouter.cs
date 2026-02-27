@@ -4,10 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
@@ -44,6 +45,7 @@ namespace Sendbird.Chat
         internal void Terminate()
         {
             _connectionStateInternalType = ConnectionStateInternalType.None;
+            _sessionKey = null;
             _sendingWsCommand = null;
             _requestingApiCommand = null;
 
@@ -140,18 +142,52 @@ namespace Sendbird.Chat
             }
 
             if (peekedApiCommandRequest.IsSessionKeyRequired && string.IsNullOrEmpty(_sessionKey) && string.IsNullOrEmpty(peekedApiCommandRequest.OverrideSessionKey))
-                return;
+            {
+                _requestingApiCommand = DequeueFirstNonSessionKeyRequiredRequest();
+                if (_requestingApiCommand == null)
+                    return;
+            }
+            else
+            {
+                _requestingApiCommand = _apiCommandRequestQueue.Dequeue();
+            }
 
-            _requestingApiCommand = _apiCommandRequestQueue.Dequeue();
             HttpClientRequestParamsBase requestParams = CreateHttpRequestParams(_requestingApiCommand, OnRequestResultHandler);
             _apiClient.Request(requestParams);
         }
 
-        private void OnRequestResultHandler(HttpResultType inHttpResultType, string inResponseOrError)
+        private ApiCommandAbstract.Request DequeueFirstNonSessionKeyRequiredRequest()
+        {
+            int count = _apiCommandRequestQueue.Count;
+            ApiCommandAbstract.Request found = null;
+            Queue<ApiCommandAbstract.Request> tempQueue = new Queue<ApiCommandAbstract.Request>();
+
+            for (int i = 0; i < count; i++)
+            {
+                ApiCommandAbstract.Request request = _apiCommandRequestQueue.Dequeue();
+                if (found == null && (!request.IsSessionKeyRequired || !string.IsNullOrEmpty(request.OverrideSessionKey)))
+                {
+                    found = request;
+                }
+                else
+                {
+                    tempQueue.Enqueue(request);
+                }
+            }
+
+            while (tempQueue.Count > 0)
+            {
+                _apiCommandRequestQueue.Enqueue(tempQueue.Dequeue());
+            }
+
+            return found;
+        }
+
+        private void OnRequestResultHandler(HttpResultType inHttpResultType, byte[] inResponseBytes)
         {
             if (_requestingApiCommand == null)
             {
-                Logger.Warning(Logger.CategoryType.Http, $"OnRequestResultHandler request is null\nResponseOrError:{inResponseOrError}");
+                Logger.Warning(Logger.CategoryType.Http, $"OnRequestResultHandler request is null\nResponseLength:{inResponseBytes?.Length ?? 0}");
                 return;
             }
 
@@ -166,17 +202,19 @@ namespace Sendbird.Chat
             }
             else if (inHttpResultType != HttpResultType.Succeeded)
             {
-                string errorMessage = inResponseOrError ?? string.Empty;
+                string errorMessage = inResponseBytes != null ? Encoding.UTF8.GetString(inResponseBytes) : string.Empty;
                 Logger.Warning(Logger.CategoryType.Http, $"OnRequestResultHandler type:{request.GetType()}\n error:{errorMessage}");
                 request.InvokeResult(null, new SbError(SbErrorCode.NetworkError, errorMessage), inIsCanceled: false);
                 return;
             }
 
-            string responseJsonString = inResponseOrError;
-            JObject jObject = ParseJsonAndCheckError(responseJsonString, out SbError error);
+            JsonMemoryProfiler.TakeSnapshot("ApiResponse:BeforeParseJson", (inResponseBytes?.Length ?? 0) * sizeof(byte));
+            SbError error = QuickCheckErrorFromBytes(inResponseBytes);
+            JsonMemoryProfiler.TakeSnapshot("ApiResponse:AfterParseJson");
             if (error != null)
             {
-                Logger.Warning(Logger.CategoryType.Command, $"OnRequestResultHandler type:{request.GetType()}\n ErrorCode:{error.ErrorCode}\n ErrorMessage:{error.ErrorMessage}");
+                Logger.Warning(Logger.CategoryType.Command,
+                    $"OnRequestResultHandler type:{request.GetType()}\n ErrorCode:{error.ErrorCode}\n ErrorMessage:{error.ErrorMessage}");
 
                 if (request.IsSessionKeyRequired && error.ErrorCode.IsSessionError())
                 {
@@ -192,21 +230,35 @@ namespace Sendbird.Chat
                 return;
             }
 
-            Logger.Info(Logger.CategoryType.Http, $"type:{request.GetType()} Result\n text:{responseJsonString}");
+            Logger.Info(Logger.CategoryType.Http, $"type:{request.GetType()} Result length:{inResponseBytes?.Length ?? 0}");
 
             ApiCommandAbstract.Response responseAbstract = null;
             Type responseType = request.ResponseType;
             if (responseType != null)
             {
-                responseAbstract = jObject.ToObjectIgnoreException(responseType) as ApiCommandAbstract.Response;
-
-                if (responseAbstract == null)
+                try
                 {
-                    request.InvokeResult(null, new SbError(SbErrorCode.MalformedData, $"Parsed command ${responseType.Name} is not a ApiResponse."), inIsCanceled: false);
+                    responseAbstract = (ApiCommandAbstract.Response)Activator.CreateInstance(responseType);
+                }
+                catch (Exception exception)
+                {
+                    Logger.Warning(Logger.CategoryType.Http, $"OnRequestResultHandler CreateInstance failed type:{responseType.Name} exception:{exception.Message}");
+                    request.InvokeResult(null, new SbError(SbErrorCode.MalformedData, $"Failed to create response ${responseType.Name}."), inIsCanceled: false);
                     return;
                 }
+                JsonMemoryProfiler.TakeSnapshot("ApiResponse:AfterCreateInstance");
 
-                responseAbstract.OnResponseAfterDeserialize(responseJsonString);
+                try
+                {
+                    responseAbstract.OnResponseAfterDeserialize(inResponseBytes);
+                }
+                catch (Exception exception)
+                {
+                    Logger.Warning(Logger.CategoryType.Http, $"OnRequestResultHandler OnResponseAfterDeserialize failed type:{responseType.Name} exception:{exception.Message}");
+                    request.InvokeResult(null, new SbError(SbErrorCode.MalformedData, $"Failed to deserialize response {responseType.Name}."), inIsCanceled: false);
+                    return;
+                }
+                JsonMemoryProfiler.TakeSnapshot("ApiResponse:AfterDeserializeToObject");
             }
 
             request.InvokeResult(responseAbstract, null, inIsCanceled: false);
@@ -249,37 +301,97 @@ namespace Sendbird.Chat
             return requestParams;
         }
 
-        private JObject ParseJsonAndCheckError(string inJsonString, out SbError inOutError)
+        private static SbError QuickCheckErrorFromBytes(byte[] inResponseBytes)
         {
-            inOutError = null;
+            if (inResponseBytes == null || inResponseBytes.Length == 0)
+                return new SbError(SbErrorCode.MalformedData, "Response is null or empty.");
 
-            if (string.IsNullOrEmpty(inJsonString))
+            int scanLength = Math.Min(200, inResponseBytes.Length);
+            bool hasErrorFlag = false;
+            for (int i = 0; i <= scanLength - 7; i++)
             {
-                inOutError = new SbError(SbErrorCode.MalformedData, $"Response string is null or empty.");
-                return null;
+                if (inResponseBytes[i] == (byte)'"' &&
+                    inResponseBytes[i + 1] == (byte)'e' &&
+                    inResponseBytes[i + 2] == (byte)'r' &&
+                    inResponseBytes[i + 3] == (byte)'r' &&
+                    inResponseBytes[i + 4] == (byte)'o' &&
+                    inResponseBytes[i + 5] == (byte)'r' &&
+                    inResponseBytes[i + 6] == (byte)'"')
+                {
+                    hasErrorFlag = true;
+                    break;
+                }
             }
 
-            JObject jObject = null;
+            if (!hasErrorFlag)
+                return null;
+
+            string jsonString = Encoding.UTF8.GetString(inResponseBytes);
+            return QuickCheckErrorStreaming(jsonString);
+        }
+
+        private static SbError QuickCheckErrorStreaming(string inJsonString)
+        {
+            if (string.IsNullOrEmpty(inJsonString))
+                return new SbError(SbErrorCode.MalformedData, "Response string is null or empty.");
+
             try
             {
-                jObject = JObject.Parse(inJsonString);
+                using (StringReader stringReader = new StringReader(inJsonString))
+                using (JsonTextReader jsonReader = new JsonTextReader(stringReader))
+                {
+                    jsonReader.ArrayPool = JsonArrayPool.EVENT_INSTANCE;
+
+                    bool? isError = null;
+                    int? errorCode = null;
+                    string errorMessage = null;
+
+                    while (jsonReader.Read())
+                    {
+                        if (jsonReader.Depth == 1 && jsonReader.TokenType == JsonToken.PropertyName)
+                        {
+                            string propName = jsonReader.Value as string;
+
+                            switch (propName)
+                            {
+                                case "error":
+                                    if (jsonReader.Read())
+                                        isError = jsonReader.Value as bool?;
+                                    break;
+                                case "code":
+                                    if (jsonReader.Read() && jsonReader.Value != null)
+                                        errorCode = Convert.ToInt32(jsonReader.Value);
+                                    break;
+                                case "message":
+                                    if (jsonReader.Read())
+                                        errorMessage = jsonReader.Value?.ToString();
+                                    break;
+                                default:
+                                    jsonReader.Skip();
+                                    break;
+                            }
+
+                            if (isError.HasValue && errorCode.HasValue && errorMessage != null)
+                                break;
+                        }
+                        else if (jsonReader.Depth > 1)
+                        {
+                            jsonReader.Skip();
+                        }
+                    }
+
+                    if (isError == true && errorCode.HasValue)
+                        return new SbError((SbErrorCode)errorCode.Value, errorMessage);
+                }
             }
             catch (Exception exception)
             {
-                Logger.Warning(Logger.CategoryType.Http, $"ParseJsonAndCheckError invalid format json:{inJsonString} exception:{exception.Message}");
-                inOutError = new SbError(SbErrorCode.MalformedData, $"Invalid response:{inJsonString}.");
-                return null;
+                Logger.Warning(Logger.CategoryType.Http, $"QuickCheckErrorStreaming exception:{exception.Message}");
+                return new SbError(SbErrorCode.MalformedData, $"Invalid response:{inJsonString}.");
             }
 
-            ErrorApiCommand.Response errorCommand = ErrorApiCommand.Response.TryConvertJsonToResponse(jObject);
-            if (errorCommand != null && errorCommand.IsError())
-            {
-                inOutError = new SbError(errorCommand.GetErrorCode(), errorCommand.GetMessage());
-            }
-
-            return jObject;
+            return null;
         }
-
         internal void ConnectWs(string inWsHost, string inUserId, string inAccessToken = null, string inSessionKey = null, WebSocketClient.ConnectResultDelegate inResultHandler = null)
         {
             WsClientConnectParams wsClientConnectParams = CreateWebSocketClientConnectParams(inWsHost, inUserId, inAccessToken, inSessionKey);
@@ -514,9 +626,15 @@ namespace Sendbird.Chat
                 return;
             }
 
+            JsonMemoryProfiler.BeginSession("WsReceive");
+            JsonMemoryProfiler.TakeSnapshot("WsReceive:RawMessage", inReceivedMessage.Length * sizeof(char));
+
             WsReceiveCommandAbstract wsReceiveCommandBase = WsEventCommandFactory.CreateCommandFromReceivedMessage(inReceivedMessage);
+            JsonMemoryProfiler.TakeSnapshot("WsReceive:AfterDeserialize");
+
             if (wsReceiveCommandBase == null)
             {
+                JsonMemoryProfiler.EndSessionAndLogReport();
                 Logger.Info(Logger.CategoryType.Command, $"CommandRouter::OnReceive command is null json:{inReceivedMessage}");
                 return;
             }
@@ -525,6 +643,8 @@ namespace Sendbird.Chat
             {
                 _eventListeners.ForEach(inEventListener => { inEventListener.OnReceiveWsEventCommand(wsReceiveCommandBase); });
             }
+
+            JsonMemoryProfiler.EndSessionAndLogReport();
         }
 
         internal void OnChangeConnectionState(ConnectionStateInternalType inChangedStateType)

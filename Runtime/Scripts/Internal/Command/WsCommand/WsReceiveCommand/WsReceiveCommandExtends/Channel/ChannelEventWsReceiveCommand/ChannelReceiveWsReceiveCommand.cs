@@ -1,13 +1,11 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal class ChannelReceiveWsReceiveCommand : WsReceiveCommandAbstract
     {
         internal enum CategoryType
@@ -37,9 +35,7 @@ namespace Sendbird.Chat
             Unhidden = 13001,
         }
 
-#pragma warning disable CS0649
-        [JsonProperty("cat")] private readonly int _category;
-#pragma warning restore CS0649
+        private int _category;
         internal ChannelEventDataAbstract EventData { get; private set; }
         internal ChannelReceiveWsReceiveCommand() : base(WsCommandType.ChannelEvent) { }
 
@@ -82,11 +78,62 @@ namespace Sendbird.Chat
 
         internal static ChannelReceiveWsReceiveCommand DeserializeFromJson(string inJsonString)
         {
-            ChannelReceiveWsReceiveCommand eventCommand = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<ChannelReceiveWsReceiveCommand>(inJsonString);
-            if (eventCommand != null)
+            // First pass: extract category quickly
+            int category = JsonStreamingPool.ReadIgnoreException(inJsonString, reader =>
             {
-                eventCommand.EventData = DeserializeEventData((CategoryType)eventCommand._category, inJsonString);
-            }
+                if (reader.TokenType != JsonToken.StartObject)
+                    return 0;
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonToken.EndObject)
+                        break;
+
+                    string propName = reader.Value as string;
+                    reader.Read();
+                    if (propName == "cat")
+                    {
+                        return JsonStreamingHelper.ReadInt(reader);
+                    }
+                    else
+                    {
+                        JsonStreamingHelper.SkipValue(reader);
+                    }
+                }
+
+                return 0;
+            });
+
+            // Second pass: extract command base fields
+            ChannelReceiveWsReceiveCommand eventCommand = JsonStreamingPool.ReadIgnoreException(inJsonString, reader =>
+            {
+                if (reader.TokenType != JsonToken.StartObject)
+                    return null;
+
+                ChannelReceiveWsReceiveCommand command = new ChannelReceiveWsReceiveCommand();
+                command._category = category;
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonToken.EndObject)
+                        break;
+
+                    string propName = reader.Value as string;
+                    reader.Read();
+                    switch (propName)
+                    {
+                        case "req_id": command.SetReqId(JsonStreamingHelper.ReadString(reader)); break;
+                        case "unread_cnt": command.SetUnreadMessageCountDto(UnreadMessageCountDto.ReadFromJson(reader)); break;
+                        default: JsonStreamingHelper.SkipValue(reader); break;
+                    }
+                }
+
+                return command;
+            });
+
+            // Event data deserialization uses the full JSON string (event data types handle their own parsing)
+            if (eventCommand != null)
+                eventCommand.EventData = DeserializeEventData((CategoryType)category, inJsonString);
 
             return eventCommand;
         }

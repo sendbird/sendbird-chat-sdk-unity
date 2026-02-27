@@ -39,14 +39,13 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
             internal ReactionEventDto ReactionEventDto { get; private set; }
 
             internal override void OnResponseAfterDeserialize(string inJsonString)
             {
-                ReactionEventDto = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<ReactionEventDto>(inJsonString);
+                ReactionEventDto = ReactionEventDto.ReadFromJsonString(inJsonString);
             }
         }
     }

@@ -5,19 +5,13 @@
 using System;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
     [Serializable]
     internal class UnblockUserEventData : UserEventDataAbstract
     {
-        [Serializable]
-        private class DataProperties
-        {
-            [JsonProperty("blocker")] internal readonly UserDto blocker = null;
-            [JsonProperty("blockee")] internal readonly UserDto blockee = null;
-        }
-
         internal override UserEventWsReceiveCommand.CategoryType CategoryType => UserEventWsReceiveCommand.CategoryType.Unblock;
 
         internal UserDto BlockerUserDto { get; private set; }
@@ -28,12 +22,13 @@ namespace Sendbird.Chat
         {
             if (base.data != null)
             {
-                DataProperties dataProperties = base.data.ToObjectIgnoreException<DataProperties>();
-                if (dataProperties != null)
-                {
-                    BlockerUserDto = dataProperties.blocker;
-                    BlockeeUserDto = dataProperties.blockee;
-                }
+                JToken blockerToken = base.data["blocker"];
+                if (blockerToken != null)
+                    BlockerUserDto = UserDto.ReadUserDtoFromJsonString(blockerToken.ToString(Formatting.None));
+
+                JToken blockeeToken = base.data["blockee"];
+                if (blockeeToken != null)
+                    BlockeeUserDto = UserDto.ReadUserDtoFromJsonString(blockeeToken.ToString(Formatting.None));
             }
         }
 

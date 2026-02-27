@@ -37,7 +37,6 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
             internal UserMessageDto UserMessageDtoDto { get; private set; }

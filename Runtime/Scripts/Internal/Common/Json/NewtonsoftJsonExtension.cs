@@ -17,6 +17,8 @@ namespace Sendbird.Chat
             Error = OnSerializerSettingsErrorHandler
         };
 
+        private static readonly JsonSerializer JSON_SERIALIZER_FROM_SETTINGS = JsonSerializer.Create(JSON_SERIALIZER_SETTINGS);
+
         private static readonly JsonSerializer JSON_SERIALIZER = new JsonSerializer
         {
             NullValueHandling = NullValueHandling.Ignore
@@ -40,7 +42,12 @@ namespace Sendbird.Chat
         {
             try
             {
-                return JsonConvert.DeserializeObject<TObject>(inJsonString, JSON_SERIALIZER_SETTINGS);
+                using (var stringReader = new StringReader(inJsonString))
+                using (var jsonReader = new JsonTextReader(stringReader))
+                {
+                    jsonReader.ArrayPool = JsonArrayPool.EVENT_INSTANCE;
+                    return JSON_SERIALIZER_FROM_SETTINGS.Deserialize<TObject>(jsonReader);
+                }
             }
             catch (Exception exception)
             {
@@ -54,7 +61,12 @@ namespace Sendbird.Chat
         {
             try
             {
-                return JsonConvert.DeserializeObject(inJsonString, inType, JSON_SERIALIZER_SETTINGS);
+                using (StringReader stringReader = new StringReader(inJsonString))
+                using (JsonTextReader jsonReader = new JsonTextReader(stringReader))
+                {
+                    jsonReader.ArrayPool = JsonArrayPool.EVENT_INSTANCE;
+                    return JSON_SERIALIZER_FROM_SETTINGS.Deserialize(jsonReader, inType);
+                }
             }
             catch (Exception exception)
             {
@@ -124,7 +136,12 @@ namespace Sendbird.Chat
 
             try
             {
-                return JObject.Parse(inJsonString);
+                using (var stringReader = new StringReader(inJsonString))
+                using (var jsonReader = new JsonTextReader(stringReader))
+                {
+                    jsonReader.ArrayPool = JsonArrayPool.EVENT_INSTANCE;
+                    return JObject.Load(jsonReader);
+                }
             }
             catch (Exception exception)
             {
@@ -144,6 +161,7 @@ namespace Sendbird.Chat
             using (StringReader stringReader = new StringReader(inJsonString))
             using (JsonTextReader jsonReader = new JsonTextReader(stringReader))
             {
+                jsonReader.ArrayPool = JsonArrayPool.EVENT_INSTANCE;
                 while (jsonReader.Read())
                 {
                     if (jsonReader.TokenType == JsonToken.PropertyName &&

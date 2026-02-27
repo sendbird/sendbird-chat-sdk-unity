@@ -1,20 +1,45 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     public class ReconnectionDto
     {
-#pragma warning disable CS0649
-        [JsonProperty("interval")] internal readonly float interval;
-        [JsonProperty("max_interval")] internal readonly float maxInterval;
-        [JsonProperty("mul")] internal readonly int mul;
-        [JsonProperty("retry_cnt")] internal readonly int retryCount;
-#pragma warning restore CS0649
+        internal float interval;
+        internal float maxInterval;
+        internal int mul;
+        internal int retryCount;
+
+        internal static ReconnectionDto ReadFromJson(JsonTextReader inReader)
+        {
+            if (inReader.TokenType == JsonToken.Null)
+                return null;
+
+            if (inReader.TokenType != JsonToken.StartObject)
+                return null;
+
+            ReconnectionDto dto = new ReconnectionDto();
+            while (inReader.Read())
+            {
+                if (inReader.TokenType == JsonToken.EndObject)
+                    break;
+
+                string propName = inReader.Value as string;
+                inReader.Read();
+                switch (propName)
+                {
+                    case "interval": dto.interval = JsonStreamingHelper.ReadFloat(inReader); break;
+                    case "max_interval": dto.maxInterval = JsonStreamingHelper.ReadFloat(inReader); break;
+                    case "mul": dto.mul = JsonStreamingHelper.ReadInt(inReader); break;
+                    case "retry_cnt": dto.retryCount = JsonStreamingHelper.ReadInt(inReader); break;
+                    default: JsonStreamingHelper.SkipValue(inReader); break;
+                }
+            }
+
+            return dto;
+        }
     }
 }

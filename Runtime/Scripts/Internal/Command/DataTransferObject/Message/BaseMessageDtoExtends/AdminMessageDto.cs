@@ -1,21 +1,17 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal sealed class AdminMessageDto : BaseMessageDto
     {
-#pragma warning disable CS0649
-        // [JsonProperty("target_langs")] internal readonly List<string> translationTargetLanguages;
-        // [JsonProperty("translations")] internal readonly Dictionary<string, string> translations;
-        // [JsonProperty("plugins")] internal readonly List<PluginDto> plugins;
-        // [JsonProperty("poll")] internal readonly PollDto poll;
-#pragma warning restore CS0649
+        internal override bool TryReadSubclassField(JsonTextReader inReader, string inPropName)
+        {
+            return false;
+        }
 
         internal override SbBaseMessage CreateMessageInstance(SendbirdChatMainContext inChatMainContext)
         {
@@ -24,12 +20,27 @@ namespace Sendbird.Chat
 
         internal static AdminMessageDto DeserializeFromJson(string inJsonString)
         {
-            return NewtonsoftJsonExtension.DeserializeObjectIgnoreException<AdminMessageDto>(inJsonString);
+            return JsonStreamingPool.ReadIgnoreException(inJsonString, ReadFromJson);
         }
 
-        internal static AdminMessageDto DeserializeFromJson(JObject inJObject)
+        internal static AdminMessageDto ReadFromJson(JsonTextReader inReader)
         {
-            return inJObject.ToObjectIgnoreException<AdminMessageDto>();
+            if (inReader.TokenType == JsonToken.Null)
+                return null;
+
+            if (inReader.TokenType != JsonToken.StartObject)
+                return null;
+
+            AdminMessageDto dto = new AdminMessageDto();
+            ReadFields(inReader, dto);
+            return dto;
+        }
+
+        internal override void WriteToJson(JsonTextWriter inWriter)
+        {
+            inWriter.WriteStartObject();
+            WriteBaseFields(inWriter);
+            inWriter.WriteEndObject();
         }
     }
 }

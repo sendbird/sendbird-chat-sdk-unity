@@ -1,14 +1,12 @@
-// 
+//
 //  Copyright (c) 2023 Sendbird, Inc.
-// 
+//
 
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal class MessageMetaArrayUpdateDto
     {
         internal enum Mode
@@ -17,17 +15,24 @@ namespace Sendbird.Chat
             [JsonName("remove")] Remove
         }
 
-#pragma warning disable CS0649
-        [JsonProperty("mode")] internal readonly string mode;
-        [JsonProperty("upsert")] internal readonly bool upsert;
-        [JsonProperty("array")] internal readonly List<MessageMetaArrayDto> array;
-#pragma warning restore CS0649
+        internal string mode;
+        internal bool upsert;
+        internal List<MessageMetaArrayDto> array;
 
         internal MessageMetaArrayUpdateDto(List<MessageMetaArrayDto> inArray, Mode inMode, bool inUpsert = true)
         {
             array = inArray;
             mode = inMode.ToJsonName();
             upsert = inUpsert;
+        }
+
+        internal void WriteToJson(JsonTextWriter inWriter)
+        {
+            inWriter.WriteStartObject();
+            JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "mode", mode);
+            JsonStreamingHelper.WriteProperty(inWriter, "upsert", upsert);
+            MessageMetaArrayDto.WriteListToJson(inWriter, "array", array);
+            inWriter.WriteEndObject();
         }
     }
 }

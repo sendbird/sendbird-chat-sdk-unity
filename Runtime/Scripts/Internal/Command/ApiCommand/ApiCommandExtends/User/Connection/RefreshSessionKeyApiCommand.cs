@@ -3,7 +3,6 @@
 // 
 
 using System;
-using System.Runtime.Serialization;
 using System.Net;
 using Newtonsoft.Json;
 
@@ -37,19 +36,40 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-#pragma warning disable CS0649
-            [JsonProperty("key")] private readonly string _key;
-            [JsonProperty("new_key")] private readonly string _newKey;
-#pragma warning restore CS0649
+            private string _key;
+            private string _newKey;
 
             internal string Key { get; private set; }
 
-            [OnDeserialized]
-            private void OnDeserialized(StreamingContext inStreamingContext)
+            internal override void OnResponseAfterDeserialize(string inJsonString)
             {
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                {
+                    reader.Read();
+                    if (reader.TokenType != JsonToken.StartObject)
+                        return;
+
+                    while (reader.Read())
+                    {
+                        if (reader.TokenType == JsonToken.EndObject)
+                            break;
+
+                        string propName = reader.Value as string;
+                        reader.Read();
+                        switch (propName)
+                        {
+                            case "key": _key = JsonStreamingHelper.ReadString(reader); break;
+                            case "new_key": _newKey = JsonStreamingHelper.ReadString(reader); break;
+                            default: JsonStreamingHelper.SkipValue(reader); break;
+                        }
+                    }
+                }
+
                 Key = _key ?? _newKey;
             }
         }

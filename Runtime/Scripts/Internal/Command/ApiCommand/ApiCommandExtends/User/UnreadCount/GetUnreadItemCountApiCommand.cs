@@ -2,10 +2,10 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
@@ -26,19 +26,26 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-            private Dictionary<string, int> _countByItemKey;
             internal Dictionary<SbUnreadItemKey, int> CountByUnreadItemKey { get; private set; }
 
             internal override void OnResponseAfterDeserialize(string inJsonString)
             {
-                _countByItemKey = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<Dictionary<string, int>>(inJsonString);
-                if (_countByItemKey != null && 0 < _countByItemKey.Count)
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                Dictionary<string, int> countByItemKey;
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                {
+                    reader.Read();
+                    countByItemKey = JsonStreamingHelper.ReadStringIntDictionary(reader);
+                }
+
+                if (countByItemKey != null && 0 < countByItemKey.Count)
                 {
                     CountByUnreadItemKey = new Dictionary<SbUnreadItemKey, int>();
-                    foreach (KeyValuePair<string, int> keyValuePair in _countByItemKey)
+                    foreach (KeyValuePair<string, int> keyValuePair in countByItemKey)
                     {
                         SbUnreadItemKey itemKey = SbUnreadItemKeyExtension.JsonNameToType(keyValuePair.Key);
                         CountByUnreadItemKey.AddIfNotContains(itemKey, keyValuePair.Value);

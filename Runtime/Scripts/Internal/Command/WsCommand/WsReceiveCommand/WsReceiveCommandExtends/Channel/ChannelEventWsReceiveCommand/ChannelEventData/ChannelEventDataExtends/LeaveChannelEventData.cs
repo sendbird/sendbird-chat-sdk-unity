@@ -19,7 +19,7 @@ namespace Sendbird.Chat
         {
             if (base.data != null)
             {
-                MemberDto = base.data.ToObjectIgnoreException<MemberDto>();
+                MemberDto = MemberDto.ReadFromJsonString(base.data.ToString(Newtonsoft.Json.Formatting.None));
             }
         }
 

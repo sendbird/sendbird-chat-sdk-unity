@@ -2,10 +2,8 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
@@ -45,33 +43,39 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-#pragma warning disable CS0649
-            [JsonProperty("results")] private readonly List<JObject> _messageJObjects;
-            [JsonProperty("total_count")] internal readonly int totalCount;
-            [JsonProperty("end_cursor")] internal readonly string endToken;
-            [JsonProperty("has_next")] internal readonly bool hasNext;
-#pragma warning restore CS0649
-
+            internal int totalCount;
+            internal string endToken;
+            internal bool hasNext;
             internal List<BaseMessageDto> BaseMessageDtos { get; private set; }
 
             internal override void OnResponseAfterDeserialize(string inJsonString)
             {
-                if (_messageJObjects != null && 0 < _messageJObjects.Count)
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
                 {
-                    BaseMessageDtos = new List<BaseMessageDto>(_messageJObjects.Count);
-                    foreach (JObject messageJObject in _messageJObjects)
+                    reader.Read();
+                    if (reader.TokenType != JsonToken.StartObject)
+                        return;
+
+                    while (reader.Read())
                     {
-                        if (messageJObject == null)
-                            continue;
+                        if (reader.TokenType == JsonToken.EndObject)
+                            break;
 
-                        BaseMessageDto baseMessageDto = BaseMessageDto.JObjectToMessageDto(messageJObject);
-                        if (baseMessageDto == null)
-                            continue;
-
-                        BaseMessageDtos.Add(baseMessageDto);
+                        string propName = reader.Value as string;
+                        reader.Read();
+                        switch (propName)
+                        {
+                            case "results": BaseMessageDtos = JsonStreamingHelper.ReadMessageDtoListDirect(reader); break;
+                            case "total_count": totalCount = JsonStreamingHelper.ReadInt(reader); break;
+                            case "end_cursor": endToken = JsonStreamingHelper.ReadString(reader); break;
+                            case "has_next": hasNext = JsonStreamingHelper.ReadBool(reader); break;
+                            default: JsonStreamingHelper.SkipValue(reader); break;
+                        }
                     }
                 }
             }

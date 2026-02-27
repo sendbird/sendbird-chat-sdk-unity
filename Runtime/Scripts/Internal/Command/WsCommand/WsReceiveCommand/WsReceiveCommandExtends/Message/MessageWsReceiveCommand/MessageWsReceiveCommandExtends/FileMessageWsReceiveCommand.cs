@@ -1,30 +1,25 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
-
-using System;
-using Newtonsoft.Json.Linq;
+//
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal class FileMessageWsReceiveCommand : MessageWsReceiveCommandAbstract
     {
         internal FileMessageWsReceiveCommand() : base(WsCommandType.FileMessage) { }
 
-        internal static FileMessageWsReceiveCommand DeserializeFromJson(string inJsonString)
+        internal static FileMessageWsReceiveCommand DeserializeFromJson(string inJsonString, int inOffset = 0)
         {
-            JObject jObject = NewtonsoftJsonExtension.ParseToJObjectIgnoreException(inJsonString);
-            if (jObject == null)
+            StreamingMessageDtoReader.CommandFields commandFields = StreamingMessageDtoReader.Deserialize<FileMessageDto>(inJsonString, out FileMessageDto dto, inOffset);
+            if (dto == null)
                 return null;
 
-            FileMessageWsReceiveCommand wsReceiveCommand = jObject.ToObjectIgnoreException<FileMessageWsReceiveCommand>();
-            if (wsReceiveCommand != null)
-            {
-                wsReceiveCommand.BaseMessageDto = FileMessageDto.DeserializeFromJson(jObject);
-            }
-
-            return wsReceiveCommand;
+            FileMessageWsReceiveCommand command = new FileMessageWsReceiveCommand();
+            command.SetReqId(commandFields.reqId);
+            command.SetRequestId(commandFields.requestId);
+            command.SetUnreadMessageCountDto(commandFields.unreadMessageCountDto);
+            command.BaseMessageDto = dto;
+            return command;
         }
     }
 }

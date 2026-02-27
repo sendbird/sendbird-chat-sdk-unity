@@ -1,13 +1,11 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal class UserEventWsReceiveCommand : WsReceiveCommandAbstract
     {
         internal enum CategoryType
@@ -17,9 +15,8 @@ namespace Sendbird.Chat
             RoleChange = 20100,
             FriendDiscoveryReady = 20900
         }
-#pragma warning disable CS0649
-        [JsonProperty("cat")] private readonly int _category;
-#pragma warning restore CS0649
+
+        private int _category;
         internal UserEventDataAbstract EventData { get; private set; }
         internal UserEventWsReceiveCommand() : base(WsCommandType.UserEvent) { }
 
@@ -44,11 +41,61 @@ namespace Sendbird.Chat
 
         internal static UserEventWsReceiveCommand DeserializeFromJson(string inJsonString)
         {
-            UserEventWsReceiveCommand eventCommand = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<UserEventWsReceiveCommand>(inJsonString);
-            if (eventCommand != null)
+            // First pass: extract category quickly
+            int category = JsonStreamingPool.ReadIgnoreException(inJsonString, reader =>
             {
-                eventCommand.EventData = DeserializeEventData((CategoryType)eventCommand._category, inJsonString);
-            }
+                if (reader.TokenType != JsonToken.StartObject)
+                    return 0;
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonToken.EndObject)
+                        break;
+
+                    string propName = reader.Value as string;
+                    reader.Read();
+                    if (propName == "cat")
+                    {
+                        return JsonStreamingHelper.ReadInt(reader);
+                    }
+                    else
+                    {
+                        JsonStreamingHelper.SkipValue(reader);
+                    }
+                }
+
+                return 0;
+            });
+
+            // Second pass: read command base fields
+            UserEventWsReceiveCommand eventCommand = JsonStreamingPool.ReadIgnoreException(inJsonString, reader =>
+            {
+                if (reader.TokenType != JsonToken.StartObject)
+                    return null;
+
+                UserEventWsReceiveCommand command = new UserEventWsReceiveCommand();
+                command._category = category;
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonToken.EndObject)
+                        break;
+
+                    string propName = reader.Value as string;
+                    reader.Read();
+                    switch (propName)
+                    {
+                        case "req_id": command.SetReqId(JsonStreamingHelper.ReadString(reader)); break;
+                        case "unread_cnt": command.SetUnreadMessageCountDto(UnreadMessageCountDto.ReadFromJson(reader)); break;
+                        default: JsonStreamingHelper.SkipValue(reader); break;
+                    }
+                }
+
+                return command;
+            });
+
+            if (eventCommand != null)
+                eventCommand.EventData = DeserializeEventData((CategoryType)category, inJsonString);
 
             return eventCommand;
         }
