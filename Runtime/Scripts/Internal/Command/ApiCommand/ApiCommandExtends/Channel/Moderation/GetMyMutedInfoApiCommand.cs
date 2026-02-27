@@ -2,7 +2,6 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Net;
 using Newtonsoft.Json;
 
@@ -22,14 +21,44 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-            [JsonProperty("is_muted")] internal readonly bool isMuted;
-            [JsonProperty("remaining_duration")] internal readonly long remainingDuration;
-            [JsonProperty("start_at")] internal readonly long startAt;
-            [JsonProperty("end_at")] internal readonly long endAt;
-            [JsonProperty("description")] internal readonly string description;
+            internal bool isMuted;
+            internal long remainingDuration;
+            internal long startAt;
+            internal long endAt;
+            internal string description;
+
+            internal override void OnResponseAfterDeserialize(string inJsonString)
+            {
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                {
+                    reader.Read();
+                    if (reader.TokenType != JsonToken.StartObject)
+                        return;
+
+                    while (reader.Read())
+                    {
+                        if (reader.TokenType == JsonToken.EndObject)
+                            break;
+
+                        string propName = reader.Value as string;
+                        reader.Read();
+                        switch (propName)
+                        {
+                            case "is_muted": isMuted = JsonStreamingHelper.ReadBool(reader); break;
+                            case "remaining_duration": remainingDuration = JsonStreamingHelper.ReadLong(reader); break;
+                            case "start_at": startAt = JsonStreamingHelper.ReadLong(reader); break;
+                            case "end_at": endAt = JsonStreamingHelper.ReadLong(reader); break;
+                            case "description": description = JsonStreamingHelper.ReadString(reader); break;
+                            default: JsonStreamingHelper.SkipValue(reader); break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

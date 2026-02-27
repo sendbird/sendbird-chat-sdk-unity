@@ -212,6 +212,15 @@ namespace Sendbird.Chat
         internal class Response
         {
             internal virtual void OnResponseAfterDeserialize(string inJsonString) { }
+
+            internal virtual void OnResponseAfterDeserialize(byte[] inResponseBytes)
+            {
+                if (inResponseBytes == null || inResponseBytes.Length == 0)
+                    return;
+
+                string jsonString = Encoding.UTF8.GetString(inResponseBytes);
+                OnResponseAfterDeserialize(jsonString);
+            }
         }
     }
 }

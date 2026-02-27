@@ -290,7 +290,6 @@ namespace Sendbird.Chat
                 inTimeoutDuration = NetworkConfig.DEFAULT_CONNECTION_TIMEOUT_DURATION;
             }
 
-            inTimeoutDuration = 5;
             Logger.Info(Logger.CategoryType.Connection, "ConnectingConnectionState TimeoutStart");
             yield return new WaitForSecondsYield(inTimeoutDuration);
             Logger.Info(Logger.CategoryType.Connection, "ConnectingConnectionState TimeoutEnd");

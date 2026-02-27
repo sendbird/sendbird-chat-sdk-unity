@@ -6,22 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
     [Serializable]
     internal class InviteChannelEventData : ChannelEventDataAbstract
     {
-        [Serializable]
-        private class DataProperties
-        {
-#pragma warning disable CS0649
-            [JsonProperty("inviter")] internal readonly MemberDto inviter;
-            [JsonProperty("invitees")] internal readonly List<MemberDto> invitees;
-            [JsonProperty("invitedAt")] internal readonly long invitedAt;
-#pragma warning restore CS0649
-        }
-
         internal override ChannelReceiveWsReceiveCommand.CategoryType CategoryType => ChannelReceiveWsReceiveCommand.CategoryType.Invite;
 
         internal MemberDto InviterMemberDto { get; private set; }
@@ -33,13 +24,17 @@ namespace Sendbird.Chat
         {
             if (base.data != null)
             {
-                DataProperties dataProperties = base.data.ToObjectIgnoreException<DataProperties>();
-                if (dataProperties != null)
-                {
-                    InviterMemberDto = dataProperties.inviter;
-                    InviteeMemberDtos = dataProperties.invitees;
-                    InvitedAt = dataProperties.invitedAt;
-                }
+                JToken inviterToken = base.data["inviter"];
+                if (inviterToken != null)
+                    InviterMemberDto = MemberDto.ReadFromJsonString(inviterToken.ToString(Formatting.None));
+
+                JToken inviteesToken = base.data["invitees"];
+                if (inviteesToken != null)
+                    InviteeMemberDtos = MemberDto.ReadListFromJsonString(inviteesToken.ToString(Formatting.None));
+
+                JToken invitedAtToken = base.data["invitedAt"];
+                if (invitedAtToken != null)
+                    InvitedAt = invitedAtToken.Value<long>();
             }
         }
 

@@ -2,7 +2,6 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Net;
 
 namespace Sendbird.Chat
@@ -20,7 +19,6 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
             internal OpenChannelDto OpenChannelDto { get; private set; }

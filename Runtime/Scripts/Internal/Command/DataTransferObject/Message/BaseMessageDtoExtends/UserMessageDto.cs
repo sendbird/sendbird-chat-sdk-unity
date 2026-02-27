@@ -1,23 +1,30 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal sealed class UserMessageDto : BaseMessageDto
     {
-#pragma warning disable CS0649
-        [JsonProperty("target_langs")] internal readonly List<string> translationTargetLanguages;
-        [JsonProperty("translations")] internal readonly Dictionary<string, string> translations;
-        [JsonProperty("plugins")] internal readonly List<PluginDto> plugins;
-        [JsonProperty("poll")] internal readonly PollDto poll;
-#pragma warning restore CS0649
+        internal List<string> translationTargetLanguages;
+        internal Dictionary<string, string> translations;
+        internal List<PluginDto> plugins;
+        internal PollDto poll;
+
+        internal override bool TryReadSubclassField(JsonTextReader inReader, string inPropName)
+        {
+            switch (inPropName)
+            {
+                case "target_langs": translationTargetLanguages = JsonStreamingHelper.ReadStringList(inReader); return true;
+                case "translations": translations = JsonStreamingHelper.ReadStringDictionary(inReader); return true;
+                case "plugins": plugins = PluginDto.ReadListFromJson(inReader); return true;
+                case "poll": poll = PollDto.ReadFromJson(inReader); return true;
+                default: return false;
+            }
+        }
 
         internal override SbBaseMessage CreateMessageInstance(SendbirdChatMainContext inChatMainContext)
         {
@@ -26,12 +33,44 @@ namespace Sendbird.Chat
 
         internal static UserMessageDto DeserializeFromJson(string inJsonString)
         {
-            return NewtonsoftJsonExtension.DeserializeObjectIgnoreException<UserMessageDto>(inJsonString);
+            return JsonStreamingPool.ReadIgnoreException(inJsonString, ReadFromJson);
         }
 
-        internal static UserMessageDto DeserializeFromJson(JObject inJObject)
+        internal static UserMessageDto ReadFromJson(JsonTextReader inReader)
         {
-            return inJObject.ToObjectIgnoreException<UserMessageDto>();
+            if (inReader.TokenType == JsonToken.Null)
+                return null;
+
+            if (inReader.TokenType != JsonToken.StartObject)
+                return null;
+
+            UserMessageDto dto = new UserMessageDto();
+            ReadFields(inReader, dto);
+            return dto;
+        }
+
+        internal override void WriteToJson(JsonTextWriter inWriter)
+        {
+            inWriter.WriteStartObject();
+            WriteBaseFields(inWriter);
+            JsonStreamingHelper.WriteStringList(inWriter, "target_langs", translationTargetLanguages);
+            JsonStreamingHelper.WriteStringDictionary(inWriter, "translations", translations);
+            if (plugins != null)
+            {
+                inWriter.WritePropertyName("plugins");
+                inWriter.WriteStartArray();
+                foreach (PluginDto pluginDto in plugins)
+                {
+                    pluginDto.WriteToJson(inWriter);
+                }
+                inWriter.WriteEndArray();
+            }
+            if (poll != null)
+            {
+                inWriter.WritePropertyName("poll");
+                poll.WriteToJson(inWriter);
+            }
+            inWriter.WriteEndObject();
         }
     }
 }

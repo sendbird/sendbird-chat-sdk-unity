@@ -5,21 +5,13 @@
 using System;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
     [Serializable]
     internal class DeclineInviteChannelEventData : ChannelEventDataAbstract
     {
-        [Serializable]
-        private class DataProperties
-        {
-#pragma warning disable CS0649
-            [JsonProperty("inviter")] internal readonly MemberDto inviter;
-            [JsonProperty("invitee")] internal readonly MemberDto invitee;
-#pragma warning restore CS0649
-        }
-
         internal override ChannelReceiveWsReceiveCommand.CategoryType CategoryType => ChannelReceiveWsReceiveCommand.CategoryType.DeclineInvite;
         internal MemberDto InviterMemberDto { get; private set; }
         internal MemberDto InviteeMemberDto { get; private set; }
@@ -29,12 +21,13 @@ namespace Sendbird.Chat
         {
             if (base.data != null)
             {
-                DataProperties dataProperties = base.data.ToObjectIgnoreException<DataProperties>();
-                if (dataProperties != null)
-                {
-                    InviterMemberDto = dataProperties.inviter;
-                    InviteeMemberDto = dataProperties.invitee;
-                }
+                JToken inviterToken = base.data["inviter"];
+                if (inviterToken != null)
+                    InviterMemberDto = MemberDto.ReadFromJsonString(inviterToken.ToString(Formatting.None));
+
+                JToken inviteeToken = base.data["invitee"];
+                if (inviteeToken != null)
+                    InviteeMemberDto = MemberDto.ReadFromJsonString(inviteeToken.ToString(Formatting.None));
             }
         }
 

@@ -1,34 +1,31 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
 using System.Collections.Generic;
+using System.IO;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
     internal abstract class SendMessageApiCommandAbstract
     {
-        [Serializable]
         internal class Payload
         {
-#pragma warning disable CS0649
-            [JsonProperty("message_type")] private string _messageType;
-            [JsonProperty("req_id")] private string _reqId;
-            [JsonProperty("user_id")] private string _userId;
-            [JsonProperty("parent_message_id")] private long? _parentMessageId;
-            [JsonProperty("channel_url")] private string _channelUrl;
-            [JsonProperty("data")] private string _data;
-            [JsonProperty("custom_type")] private string _customType;
-            [JsonProperty("mention_type")] private string _mentionType;
-            [JsonProperty("mentioned_user_ids")] private List<string> _mentionedUserIds;
-            [JsonProperty("push_option")] private string _pushNotificationDeliveryOption;
-            [JsonProperty("metaarray")] private List<MessageMetaArrayDto> _metaArrays;
-            [JsonProperty("apple_critical_alert_options")] private AppleCriticalAlertOptionsDto _appleCriticalAlertOptionsDto;
-            [JsonProperty("reply_to_channel")] private bool _replyToChannel;
-            [JsonProperty("pin_message")] private bool _isPinnedMessage;
-#pragma warning restore CS0649
+            private string _messageType;
+            private string _reqId;
+            private string _userId;
+            private long? _parentMessageId;
+            private string _channelUrl;
+            private string _data;
+            private string _customType;
+            private string _mentionType;
+            private List<string> _mentionedUserIds;
+            private string _pushNotificationDeliveryOption;
+            private List<MessageMetaArrayDto> _metaArrays;
+            private AppleCriticalAlertOptionsDto _appleCriticalAlertOptionsDto;
+            private bool _replyToChannel;
+            private bool _isPinnedMessage;
 
             protected Payload(string inMessageType, string inRequestId, string inChannelUrl, string inUserId, SbBaseMessageCreateParams inParams)
             {
@@ -66,6 +63,38 @@ namespace Sendbird.Chat
                         _metaArrays.Add(new MessageMetaArrayDto(messageMetaArray.Key, messageMetaArray.ValueInternal));
                     }
                 }
+            }
+
+            internal string ToJsonString()
+            {
+                return JsonStreamingPool.WriteIgnoreException(writer =>
+                {
+                    writer.WriteStartObject();
+                    WriteFields(writer);
+                    writer.WriteEndObject();
+                });
+            }
+
+            protected virtual void WriteFields(JsonTextWriter inWriter)
+            {
+                JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "message_type", _messageType);
+                JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "req_id", _reqId);
+                JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "user_id", _userId);
+                JsonStreamingHelper.WriteNullableLong(inWriter, "parent_message_id", _parentMessageId);
+                JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "channel_url", _channelUrl);
+                JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "data", _data);
+                JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "custom_type", _customType);
+                JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "mention_type", _mentionType);
+                JsonStreamingHelper.WriteStringList(inWriter, "mentioned_user_ids", _mentionedUserIds);
+                JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "push_option", _pushNotificationDeliveryOption);
+                MessageMetaArrayDto.WriteListToJson(inWriter, "metaarray", _metaArrays);
+                if (_appleCriticalAlertOptionsDto != null)
+                {
+                    inWriter.WritePropertyName("apple_critical_alert_options");
+                    _appleCriticalAlertOptionsDto.WriteToJson(inWriter);
+                }
+                JsonStreamingHelper.WritePropertyIfNotDefault(inWriter, "reply_to_channel", _replyToChannel);
+                JsonStreamingHelper.WritePropertyIfNotDefault(inWriter, "pin_message", _isPinnedMessage);
             }
         }
     }

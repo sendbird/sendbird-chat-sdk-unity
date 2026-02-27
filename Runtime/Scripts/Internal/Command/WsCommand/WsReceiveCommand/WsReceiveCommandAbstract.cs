@@ -1,17 +1,15 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal abstract class WsReceiveCommandAbstract
     {
-        [JsonProperty("req_id")] private readonly string _reqId = null;
-        [JsonProperty("unread_cnt")] internal readonly UnreadMessageCountDto unreadMessageCountDto;
+        private string _reqId;
+        internal UnreadMessageCountDto unreadMessageCountDto;
 
         internal string ReqId => _reqId;
 
@@ -27,11 +25,14 @@ namespace Sendbird.Chat
             return string.IsNullOrEmpty(_reqId) == false;
         }
 
-        internal static WsReceiveCommandAbstract DeserializeFromJson(WsCommandType inCommandType, string inJsonString)
+        internal void SetReqId(string inValue)
         {
-            WsReceiveCommandAbstract wsReceiveCommand = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<WsReceiveCommandAbstract>(inJsonString);
-            wsReceiveCommand.CommandType = inCommandType;
-            return wsReceiveCommand;
+            _reqId = inValue;
+        }
+
+        internal void SetUnreadMessageCountDto(UnreadMessageCountDto inDto)
+        {
+            unreadMessageCountDto = inDto;
         }
     }
 }

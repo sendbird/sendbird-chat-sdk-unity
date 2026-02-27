@@ -80,10 +80,24 @@ namespace Sendbird.Chat
             _joinedAt = groupChannelDto.joinedTs;
 
             if (groupChannelDto.LastMessage != null)
-                _lastMessage = groupChannelDto.LastMessage.CreateMessageInstance(chatMainContextRef);
+            {
+                if (_lastMessage == null ||
+                    _lastMessage.MessageId != groupChannelDto.LastMessage.MessageId ||
+                    _lastMessage.UpdatedAt < groupChannelDto.LastMessage.updatedAt)
+                {
+                    _lastMessage = groupChannelDto.LastMessage.CreateMessageInstance(chatMainContextRef);
+                }
+            }
 
             if (groupChannelDto.LatestPinnedMessage != null)
-                _lastPinnedMessage = groupChannelDto.LatestPinnedMessage.CreateMessageInstance(chatMainContextRef);
+            {
+                if (_lastPinnedMessage == null ||
+                    _lastPinnedMessage.MessageId != groupChannelDto.LatestPinnedMessage.MessageId ||
+                    _lastPinnedMessage.UpdatedAt < groupChannelDto.LatestPinnedMessage.updatedAt)
+                {
+                    _lastPinnedMessage = groupChannelDto.LatestPinnedMessage.CreateMessageInstance(chatMainContextRef);
+                }
+            }
 
             SetMessageOffsetTimestamp(groupChannelDto.tsMessageOffset);
             _messageSurvivalSeconds = groupChannelDto.messageSurvivalSeconds;

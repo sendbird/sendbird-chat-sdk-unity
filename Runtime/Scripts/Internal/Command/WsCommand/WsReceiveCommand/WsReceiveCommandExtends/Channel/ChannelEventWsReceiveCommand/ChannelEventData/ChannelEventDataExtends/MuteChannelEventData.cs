@@ -19,7 +19,7 @@ namespace Sendbird.Chat
         {
             if (base.data != null)
             {
-                RestrictedUserDto = base.data.ToObjectIgnoreException<RestrictedUserDto>();
+                RestrictedUserDto = RestrictedUserDto.ReadFromJsonString(base.data.ToString(Newtonsoft.Json.Formatting.None));
             }
         }
 

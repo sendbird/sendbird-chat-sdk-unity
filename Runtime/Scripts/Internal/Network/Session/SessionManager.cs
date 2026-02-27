@@ -30,8 +30,13 @@ namespace Sendbird.Chat
 
         internal void Terminate()
         {
+            StopRefreshAuthTokenAndSessionKey();
             _eventListeners.Clear();
             _sessionHandler = null;
+            _sessionKey = null;
+            _eKey = null;
+            _userId = null;
+            _authToken = null;
         }
 
         internal void InsertEventListener(ISessionManagerEventListener inEventListener)
@@ -111,7 +116,7 @@ namespace Sendbird.Chat
 
         private bool IsRefreshingSessionKey()
         {
-            return _requestAuthTokenRequireCoroutine != null;
+            return _refreshSessionKeyCoroutine != null;
         }
 
         private void RequestAuthTokenRequiredIfNotStarted()

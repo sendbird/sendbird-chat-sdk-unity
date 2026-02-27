@@ -1,40 +1,63 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal class ReactionWsReceiveCommand : WsReceiveCommandAbstract
     {
-        [JsonProperty("channel_url")] internal readonly string channelUrl = null;
-        [JsonProperty("channel_type")] private readonly string _channelType = null;
+        internal string channelUrl;
+        private string _channelType;
 
         internal ReactionWsReceiveCommand() : base(WsCommandType.Reaction) { }
 
         internal SbChannelType ChannelType { get; private set; }
         internal ReactionEventDto ReactionEventDto { get; private set; }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext inStreamingContext)
-        {
-            if (string.IsNullOrEmpty(_channelType) == false)
-                ChannelType = SbChannelTypeExtension.JsonNameToType(_channelType);
-        }
-
         internal static ReactionWsReceiveCommand DeserializeFromJson(string inJsonString)
         {
-            ReactionWsReceiveCommand wsReceiveCommand = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<ReactionWsReceiveCommand>(inJsonString);
-            if (wsReceiveCommand != null)
+            return JsonStreamingPool.ReadIgnoreException(inJsonString, reader =>
             {
-                wsReceiveCommand.ReactionEventDto = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<ReactionEventDto>(inJsonString);
-            }
+                if (reader.TokenType != JsonToken.StartObject)
+                    return null;
 
-            return wsReceiveCommand;
+                ReactionWsReceiveCommand command = new ReactionWsReceiveCommand();
+                ReactionEventDto reactionEventDto = new ReactionEventDto();
+                string reactionOperation = null;
+
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonToken.EndObject)
+                        break;
+
+                    string propName = reader.Value as string;
+                    reader.Read();
+                    switch (propName)
+                    {
+                        case "req_id": command.SetReqId(JsonStreamingHelper.ReadString(reader)); break;
+                        case "unread_cnt": command.SetUnreadMessageCountDto(UnreadMessageCountDto.ReadFromJson(reader)); break;
+                        case "channel_url": command.channelUrl = JsonStreamingHelper.ReadString(reader); break;
+                        case "channel_type": command._channelType = JsonStreamingHelper.ReadString(reader); break;
+                        // ReactionEventDto fields (shared in same JSON)
+                        case "reaction": reactionEventDto.key = JsonStreamingHelper.ReadString(reader); break;
+                        case "user_id": reactionEventDto.userId = JsonStreamingHelper.ReadString(reader); break;
+                        case "updated_at": reactionEventDto.updatedAt = JsonStreamingHelper.ReadLong(reader); break;
+                        case "msg_id": reactionEventDto.msgId = JsonStreamingHelper.ReadLong(reader); break;
+                        case "operation": reactionOperation = JsonStreamingHelper.ReadString(reader); break;
+                        default: JsonStreamingHelper.SkipValue(reader); break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(command._channelType) == false)
+                    command.ChannelType = SbChannelTypeExtension.JsonNameToType(command._channelType);
+
+                // Manually set operation on ReactionEventDto
+                command.ReactionEventDto = ReactionEventDto.ReadFromJsonString(inJsonString);
+
+                return command;
+            });
         }
     }
 }

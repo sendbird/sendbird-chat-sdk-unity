@@ -69,7 +69,9 @@ namespace Sendbird.Chat
             ChatMainContext.SessionManager.OnReceiveWsEventCommand(inWsReceiveCommand);
             ChatMainContext.ConnectionManager.OnReceiveWsEventCommand(inWsReceiveCommand);
             ChatMainContext.OpenChannelManager.OnReceiveWsEventCommand(inWsReceiveCommand);
+            JsonMemoryProfiler.TakeSnapshot("WsEvent:BeforeGroupChannelManager");
             ChatMainContext.GroupChannelManager.OnReceiveWsEventCommand(inWsReceiveCommand);
+            JsonMemoryProfiler.TakeSnapshot("WsEvent:AfterGroupChannelManager");
         }
     }
 }

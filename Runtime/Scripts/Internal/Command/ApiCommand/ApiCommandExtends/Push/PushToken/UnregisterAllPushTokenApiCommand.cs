@@ -2,7 +2,6 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Net;
 using Newtonsoft.Json;
 
@@ -20,10 +19,36 @@ namespace Sendbird.Chat
                 resultHandler = inResultHandler;
             }
 
-            [Serializable]
             internal sealed class Response : ApiCommandAbstract.Response
             {
-                [JsonProperty("device_token_last_deleted_at")] internal readonly long deviceTokenLastDeletedAt;
+                internal long deviceTokenLastDeletedAt;
+
+                internal override void OnResponseAfterDeserialize(string inJsonString)
+                {
+                    if (string.IsNullOrEmpty(inJsonString))
+                        return;
+
+                    using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                    {
+                        reader.Read();
+                        if (reader.TokenType != JsonToken.StartObject)
+                            return;
+
+                        while (reader.Read())
+                        {
+                            if (reader.TokenType == JsonToken.EndObject)
+                                break;
+
+                            string propName = reader.Value as string;
+                            reader.Read();
+                            switch (propName)
+                            {
+                                case "device_token_last_deleted_at": deviceTokenLastDeletedAt = JsonStreamingHelper.ReadLong(reader); break;
+                                default: JsonStreamingHelper.SkipValue(reader); break;
+                            }
+                        }
+                    }
+                }
             }
         }
     }

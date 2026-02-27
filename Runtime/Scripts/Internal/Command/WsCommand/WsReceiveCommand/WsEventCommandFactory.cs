@@ -41,33 +41,33 @@ namespace Sendbird.Chat
                 return null;
             }
 
-            string jsonString = inReceivedMessage.Substring(MESSAGE_TYPE_LENGTH);
             switch (commandType)
             {
-                case WsCommandType.AdminMessage:       return AdminMessageWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.BroadcastMessage:   return AdminMessageWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.ChannelEvent:       return ChannelReceiveWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.DeleteMessage:      return DeleteMessageWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.Delivery:           return DeliveryWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.EnterChannel:       return EnterChannelWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.Error:              return ErrorWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.ExitChannel:        return ExitChannelWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.FileMessage:        return FileMessageWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.Logi:               return LogiWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.MemberUpdateCount:  return MemberUpdateCountWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.Pong:               return PongWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.Reaction:           return ReactionWsReceiveCommand.DeserializeFromJson(jsonString);
+                case WsCommandType.AdminMessage:       return AdminMessageWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.BroadcastMessage:   return AdminMessageWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.DeleteMessage:      return DeleteMessageWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.Delivery:           return DeliveryWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.EnterChannel:       return EnterChannelWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.Error:              return ErrorWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.ExitChannel:        return ExitChannelWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.FileMessage:        return FileMessageWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.MemberUpdateCount:  return MemberUpdateCountWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.Pong:               return PongWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
                 case WsCommandType.Reactions:          return null;
-                case WsCommandType.Read:               return ReadWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.SessionExpired:     return SessionExpiredWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.Threads:            return ThreadsWsReceiveCommand.DeserializeFromJson(jsonString);
+                case WsCommandType.Read:               return ReadWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.SessionExpired:     return SessionExpiredWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.Threads:            return ThreadsWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
                 case WsCommandType.TypingEnd:          return null;
                 case WsCommandType.TypingStart:        return null;
-                case WsCommandType.UpdateAdminMessage: return UpdateAdminMessageWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.UpdateFileMessage:  return UpdateFileMessageWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.UpdateUserMessage:  return UpdateUserMessageWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.UserEvent:          return UserEventWsReceiveCommand.DeserializeFromJson(jsonString);
-                case WsCommandType.UserMessage:        return UserMessageWsReceiveCommand.DeserializeFromJson(jsonString);
+                case WsCommandType.UpdateAdminMessage: return UpdateAdminMessageWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.UpdateFileMessage:  return UpdateFileMessageWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.UpdateUserMessage:  return UpdateUserMessageWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                case WsCommandType.UserMessage:        return UserMessageWsReceiveCommand.DeserializeFromJson(inReceivedMessage, MESSAGE_TYPE_LENGTH);
+                // Commands with secondary string parsing — use Substring (small payloads)
+                case WsCommandType.ChannelEvent:       return ChannelReceiveWsReceiveCommand.DeserializeFromJson(inReceivedMessage.Substring(MESSAGE_TYPE_LENGTH));
+                case WsCommandType.Logi:               return LogiWsReceiveCommand.DeserializeFromJson(inReceivedMessage.Substring(MESSAGE_TYPE_LENGTH));
+                case WsCommandType.Reaction:           return ReactionWsReceiveCommand.DeserializeFromJson(inReceivedMessage.Substring(MESSAGE_TYPE_LENGTH));
+                case WsCommandType.UserEvent:          return UserEventWsReceiveCommand.DeserializeFromJson(inReceivedMessage.Substring(MESSAGE_TYPE_LENGTH));
                 default:
                 {
                     Logger.Warning(Logger.CategoryType.Command, $"WsEventCommandFactory::CreateEventCommandFromJson Invalid event command. type:{commandType}");

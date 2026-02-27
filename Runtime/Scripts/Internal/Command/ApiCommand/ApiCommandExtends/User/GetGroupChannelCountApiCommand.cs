@@ -2,7 +2,6 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Net;
 using Newtonsoft.Json;
 
@@ -24,10 +23,36 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-            [JsonProperty("group_channel_count")] internal readonly int groupChannelCount;
+            internal int groupChannelCount;
+
+            internal override void OnResponseAfterDeserialize(string inJsonString)
+            {
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                {
+                    reader.Read();
+                    if (reader.TokenType != JsonToken.StartObject)
+                        return;
+
+                    while (reader.Read())
+                    {
+                        if (reader.TokenType == JsonToken.EndObject)
+                            break;
+
+                        string propName = reader.Value as string;
+                        reader.Read();
+                        switch (propName)
+                        {
+                            case "group_channel_count": groupChannelCount = JsonStreamingHelper.ReadInt(reader); break;
+                            default: JsonStreamingHelper.SkipValue(reader); break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

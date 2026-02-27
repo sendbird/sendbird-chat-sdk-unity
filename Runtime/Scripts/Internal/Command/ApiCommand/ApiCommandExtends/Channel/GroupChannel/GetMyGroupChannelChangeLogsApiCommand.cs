@@ -2,7 +2,6 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
@@ -40,13 +39,42 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-            [JsonProperty("updated")] internal readonly List<GroupChannelDto> updatedGroupChannelDtos;
-            [JsonProperty("deleted")] internal readonly List<string> deletedChannelUrls;
-            [JsonProperty("has_more")] internal readonly bool hasMore;
-            [JsonProperty("next")] internal readonly string token;
+            internal List<GroupChannelDto> updatedGroupChannelDtos;
+            internal List<string> deletedChannelUrls;
+            internal bool hasMore;
+            internal string token;
+
+            internal override void OnResponseAfterDeserialize(string inJsonString)
+            {
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                {
+                    reader.Read();
+                    if (reader.TokenType != JsonToken.StartObject)
+                        return;
+
+                    while (reader.Read())
+                    {
+                        if (reader.TokenType == JsonToken.EndObject)
+                            break;
+
+                        string propName = reader.Value as string;
+                        reader.Read();
+                        switch (propName)
+                        {
+                            case "updated": updatedGroupChannelDtos = GroupChannelDto.ReadListFromJson(reader); break;
+                            case "deleted": deletedChannelUrls = JsonStreamingHelper.ReadStringList(reader); break;
+                            case "has_more": hasMore = JsonStreamingHelper.ReadBool(reader); break;
+                            case "next": token = JsonStreamingHelper.ReadString(reader); break;
+                            default: JsonStreamingHelper.SkipValue(reader); break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

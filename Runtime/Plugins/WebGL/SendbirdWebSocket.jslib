@@ -55,6 +55,10 @@ const SendbirdWebSocketBridge = {
     // Delete the WebSocket client by ID
     SendbirdWebSocketBridge_DeleteWebSocketClient: function (clientId) {
         if (bridgeContext.clients[clientId] != null) {
+            var client = bridgeContext.clients[clientId];
+            if (client.webSocket != null && client.webSocket.readyState !== WebSocket.CLOSING && client.webSocket.readyState !== WebSocket.CLOSED) {
+                client.webSocket.close();
+            }
             delete bridgeContext.clients[clientId];
         } else {
             console.warn('DeleteWebSocketClient WebSocket client not found with ID: ' + clientId);
@@ -89,6 +93,7 @@ const SendbirdWebSocketBridge = {
                 var stringPtr = _malloc(lengthBytes);
                 stringToUTF8(event.data, stringPtr, lengthBytes);
                 bridgeContext.invokeOnMessageCallback(client.clientId, stringPtr);
+                _free(stringPtr);
             } else {
                 console.warn("WebSocket received invalid message type:", (typeof event.data));
             }
@@ -124,13 +129,13 @@ const SendbirdWebSocketBridge = {
     SendbirdWebSocketBridge_Close: function (clientId) {
         const client = bridgeContext.clients[clientId];
         if (!client) {
-            console.warn('SendbirdWebSocketBridge_Send client not found with ID: ' + clientId);
+            console.warn('SendbirdWebSocketBridge_Close client not found with ID: ' + clientId);
             bridgeContext.invokeOnErrorCallback(clientId);
             return;
         }
 
         if (client.webSocket != null && client.webSocket.readyState !== WebSocket.CLOSING && client.webSocket.readyState !== WebSocket.CLOSED) {
-            client.webSocket.Close();
+            client.webSocket.close();
         } else {
             console.warn('Close WebSocket client not found with ID: ' + clientId);
             bridgeContext.invokeOnErrorCallback(clientId);

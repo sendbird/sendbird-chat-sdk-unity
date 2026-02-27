@@ -97,13 +97,19 @@ namespace Sendbird.Chat
             WsClientSendResult.ResultType resultType = WsClientSendResult.ResultType.Succeeded;
             string resultMessage = string.Empty;
             int nativeErrorCode = WsClientSendResult.UNKNOWN_NATIVE_ERROR_CODE;
+            byte[] rentedBuffer = null;
             try
             {
                 if (_webSocket != null)
                 {
-                    byte[] encodedBytes = Encoding.UTF8.GetBytes(inTextMessage);
-                    ArraySegment<byte> buffer = new ArraySegment<byte>(encodedBytes, 0, encodedBytes.Length);
+                    JsonMemoryProfiler.TakeSnapshot("NetWs:SendAsync:BeforeUtf8Encode", inTextMessage.Length * sizeof(char));
+                    int byteCount = Encoding.UTF8.GetByteCount(inTextMessage);
+                    rentedBuffer = BufferPool.Rent(byteCount);
+                    int actualBytes = Encoding.UTF8.GetBytes(inTextMessage, 0, inTextMessage.Length, rentedBuffer, 0);
+                    JsonMemoryProfiler.TakeSnapshot("NetWs:SendAsync:AfterUtf8Encode", actualBytes);
+                    ArraySegment<byte> buffer = new ArraySegment<byte>(rentedBuffer, 0, actualBytes);
                     await _webSocket.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
+                    JsonMemoryProfiler.TakeSnapshot("NetWs:SendAsync:AfterSendAsync");
                 }
             }
             catch (Exception exception)
@@ -117,6 +123,7 @@ namespace Sendbird.Chat
             }
             finally
             {
+                BufferPool.Return(rentedBuffer);
                 inResultHandler?.Invoke(new WsClientSendResult(resultType, resultMessage, nativeErrorCode));
             }
         }
@@ -179,11 +186,12 @@ namespace Sendbird.Chat
 
                     if (webSocketReceiveResult.MessageType == WebSocketMessageType.Text)
                     {
+                        JsonMemoryProfiler.TakeSnapshot("NetWs:ReceiveAsync:AfterReceiveBytes", memoryStream.Length);
                         using (StreamReader streamReader = new StreamReader(memoryStream, Encoding.UTF8))
                         {
                             Task<string> readToEndTask = streamReader.ReadToEndAsync();
                             await readToEndTask;
-                            
+                            JsonMemoryProfiler.TakeSnapshot("NetWs:ReceiveAsync:AfterBytesToString", readToEndTask.Result.Length * sizeof(char));
                             inReceiveMessageHandler(readToEndTask.Result);
                         }
                     }

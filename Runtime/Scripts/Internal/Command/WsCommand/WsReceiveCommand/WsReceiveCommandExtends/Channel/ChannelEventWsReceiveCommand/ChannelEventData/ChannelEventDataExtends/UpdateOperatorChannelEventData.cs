@@ -6,18 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Sendbird.Chat
 {
     [Serializable]
     internal class UpdateOperatorChannelEventData : ChannelEventDataAbstract
     {
-        [Serializable]
-        private class DataProperties
-        {
-            [JsonProperty("operators")] internal readonly List<MemberDto> operators = null;
-        }
-
         internal override ChannelReceiveWsReceiveCommand.CategoryType CategoryType => ChannelReceiveWsReceiveCommand.CategoryType.UpdateOperator;
         internal List<MemberDto> OperatorMemberDtos { get; private set; }
 
@@ -26,10 +21,10 @@ namespace Sendbird.Chat
         {
             if (base.data != null)
             {
-                DataProperties dataProperties = base.data.ToObjectIgnoreException<DataProperties>();
-                if (dataProperties != null)
+                JToken operatorsToken = base.data["operators"];
+                if (operatorsToken != null)
                 {
-                    OperatorMemberDtos = dataProperties.operators;
+                    OperatorMemberDtos = MemberDto.ReadListFromJsonString(operatorsToken.ToString(Formatting.None));
                 }
             }
         }

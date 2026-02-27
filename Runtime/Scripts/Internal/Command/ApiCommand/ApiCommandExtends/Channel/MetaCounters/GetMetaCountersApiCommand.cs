@@ -32,14 +32,20 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
             internal Dictionary<string, int> MetaCounters { get; private set; }
 
             internal override void OnResponseAfterDeserialize(string inJsonString)
             {
-                MetaCounters = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<Dictionary<string, int>>(inJsonString);
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                {
+                    reader.Read();
+                    MetaCounters = JsonStreamingHelper.ReadStringIntDictionary(reader);
+                }
             }
         }
     }

@@ -1,8 +1,7 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
 using System.Collections.Generic;
 using System.Net;
 using Newtonsoft.Json;
@@ -13,18 +12,24 @@ namespace Sendbird.Chat
     {
         internal sealed class Request : ApiCommandAbstract.PostRequest
         {
-            [Serializable]
             private class Payload : SendMessageApiCommandAbstract.Payload
             {
-#pragma warning disable CS0649
-                [JsonProperty("message")] internal string message;
-                [JsonProperty("target_langs")] internal List<string> translationTargetLanguages;
-                [JsonProperty("poll_id")] internal long? pollId;
-                [JsonProperty("mentioned_message_template")] internal string mentionedMessageTemplate;
-#pragma warning restore CS0649
+                internal string message;
+                internal List<string> translationTargetLanguages;
+                internal long? pollId;
+                internal string mentionedMessageTemplate;
 
                 internal Payload(string inChannelUrl, string inRequestId, string inUserId, SbUserMessageCreateParams inParams)
                     : base(WsCommandType.UserMessage.ToJsonName(), inRequestId, inChannelUrl, inUserId, inParams) { }
+
+                protected override void WriteFields(JsonTextWriter inWriter)
+                {
+                    base.WriteFields(inWriter);
+                    JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "message", message);
+                    JsonStreamingHelper.WriteStringList(inWriter, "target_langs", translationTargetLanguages);
+                    JsonStreamingHelper.WriteNullableLong(inWriter, "poll_id", pollId);
+                    JsonStreamingHelper.WritePropertyIfNotNull(inWriter, "mentioned_message_template", mentionedMessageTemplate);
+                }
             }
 
             internal Request(string inRequestId, string inChannelUrl, SbChannelType inChannelType, string inUserId, SbUserMessageCreateParams inParams, ResultHandler inResultHandler)
@@ -44,11 +49,10 @@ namespace Sendbird.Chat
                     }
                 }
 
-                ContentBody = NewtonsoftJsonExtension.SerializeObjectIgnoreException(payload);
+                ContentBody = payload.ToJsonString();
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
             internal UserMessageDto UserMessageDtoDto { get; private set; }

@@ -1,35 +1,54 @@
-// 
+//
 //  Copyright (c) 2022 Sendbird, Inc.
-// 
+//
 
-using System;
-using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
 {
-    [Serializable]
     internal class ReadWsReceiveCommand : WsReceiveCommandAbstract
     {
-        [JsonProperty("channel_url")] internal readonly string channelUrl = null;
-        [JsonProperty("channel_type")] private readonly string _channelType = null;
-        [JsonProperty("ts")] internal readonly long timestamp;
-        [JsonProperty("user")] internal readonly UserDto userDto = null;
+        internal string channelUrl;
+        private string _channelType;
+        internal long timestamp;
+        internal UserDto userDto;
 
         internal ReadWsReceiveCommand() : base(WsCommandType.Read) { }
 
         internal SbChannelType ChannelType { get; private set; }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext inStreamingContext)
+        internal static ReadWsReceiveCommand DeserializeFromJson(string inJsonString, int inOffset = 0)
         {
-            if (string.IsNullOrEmpty(_channelType) == false)
-                ChannelType = SbChannelTypeExtension.JsonNameToType(_channelType);
-        }
+            return JsonStreamingPool.ReadIgnoreException(inJsonString, inOffset, reader =>
+            {
+                if (reader.TokenType != JsonToken.StartObject)
+                    return null;
 
-        internal static ReadWsReceiveCommand DeserializeFromJson(string inJsonString)
-        {
-            return NewtonsoftJsonExtension.DeserializeObjectIgnoreException<ReadWsReceiveCommand>(inJsonString);
+                ReadWsReceiveCommand command = new ReadWsReceiveCommand();
+                while (reader.Read())
+                {
+                    if (reader.TokenType == JsonToken.EndObject)
+                        break;
+
+                    string propName = reader.Value as string;
+                    reader.Read();
+                    switch (propName)
+                    {
+                        case "req_id": command.SetReqId(JsonStreamingHelper.ReadString(reader)); break;
+                        case "unread_cnt": command.SetUnreadMessageCountDto(UnreadMessageCountDto.ReadFromJson(reader)); break;
+                        case "channel_url": command.channelUrl = JsonStreamingHelper.ReadString(reader); break;
+                        case "channel_type": command._channelType = JsonStreamingHelper.ReadString(reader); break;
+                        case "ts": command.timestamp = JsonStreamingHelper.ReadLong(reader); break;
+                        case "user": command.userDto = UserDto.ReadUserDtoFromJson(reader); break;
+                        default: JsonStreamingHelper.SkipValue(reader); break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(command._channelType) == false)
+                    command.ChannelType = SbChannelTypeExtension.JsonNameToType(command._channelType);
+
+                return command;
+            });
         }
     }
 }

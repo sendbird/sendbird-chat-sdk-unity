@@ -2,9 +2,7 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using Newtonsoft.Json;
 
 namespace Sendbird.Chat
@@ -52,13 +50,42 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-            [JsonProperty("url")] internal readonly string url;
-            [JsonProperty("thumbnails")] internal readonly List<ThumbnailDto> thumbnailDtos;
-            [JsonProperty("require_auth")] internal readonly bool requireAuth;
-            [JsonProperty("file_size")] internal readonly int fileSize;
+            internal string url;
+            internal List<ThumbnailDto> thumbnailDtos;
+            internal bool requireAuth;
+            internal int fileSize;
+
+            internal override void OnResponseAfterDeserialize(string inJsonString)
+            {
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                {
+                    reader.Read();
+                    if (reader.TokenType != JsonToken.StartObject)
+                        return;
+
+                    while (reader.Read())
+                    {
+                        if (reader.TokenType == JsonToken.EndObject)
+                            break;
+
+                        string propName = reader.Value as string;
+                        reader.Read();
+                        switch (propName)
+                        {
+                            case "url": url = JsonStreamingHelper.ReadString(reader); break;
+                            case "thumbnails": thumbnailDtos = ThumbnailDto.ReadListFromJson(reader); break;
+                            case "require_auth": requireAuth = JsonStreamingHelper.ReadBool(reader); break;
+                            case "file_size": fileSize = JsonStreamingHelper.ReadInt(reader); break;
+                            default: JsonStreamingHelper.SkipValue(reader); break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

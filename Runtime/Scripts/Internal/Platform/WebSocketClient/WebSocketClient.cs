@@ -111,7 +111,9 @@ namespace Sendbird.Chat
             {
                 string receivedMessage = _receivedMessageBlockingCollection.Take();
                 Logger.Debug(Logger.CategoryType.WebSocket, $"Flush received queue\n {receivedMessage}");
+                JsonMemoryProfiler.TakeSnapshot("WsClient:BeforeFlushToRouter", receivedMessage.Length * sizeof(char));
                 _eventListeners?.OnReceive(receivedMessage);
+                JsonMemoryProfiler.TakeSnapshot("WsClient:AfterFlushToRouter");
             }
         }
 

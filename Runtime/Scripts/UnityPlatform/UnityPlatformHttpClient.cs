@@ -2,6 +2,7 @@
 //  Copyright (c) 2022 Sendbird, Inc.
 // 
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -41,7 +42,7 @@ namespace Sendbird.Chat
             if (inRequestParams == null || string.IsNullOrEmpty(inRequestParams.Url) || string.IsNullOrEmpty(inRequestParams.HttpMethodType.ToMethodString()))
             {
                 Logger.Error(Logger.CategoryType.Http, $"UnityHttpClient::RequestCoroutine invalid params");
-                inRequestParams?.InvokeResult(HttpResultType.Failed, "Invalid RequestParams");
+                inRequestParams?.InvokeResult(HttpResultType.Failed, Encoding.UTF8.GetBytes("Invalid RequestParams"));
                 yield break;
             }
 
@@ -103,7 +104,7 @@ namespace Sendbird.Chat
                 if (webRequest.uploadHandler != null && webRequest.uploadHandler.data != null)
                     uploadTotalBytes = (ulong)webRequest.uploadHandler.data.Length;
 
-                yield return webRequest.SendWebRequest();
+                webRequest.SendWebRequest();
 
                 while (!webRequest.isDone)
                 {
@@ -142,21 +143,21 @@ namespace Sendbird.Chat
                         goto SEND_WEB_REQUEST_START_LABEL;
                     }
 
+                    string error = webRequest.error;
                     webRequest.Dispose();
-                    inRequestParams.InvokeResult(HttpResultType.Failed, webRequest.error);
+                    inRequestParams.InvokeResult(HttpResultType.Failed, Encoding.UTF8.GetBytes(error ?? string.Empty));
                     yield break;
                 }
 
-                string jsonString = string.Empty;
+                byte[] responseBytes = Array.Empty<byte>();
                 if (webRequest.downloadHandler != null)
                 {
-                    Logger.Info(Logger.CategoryType.Http, $"DownloadHandler Text:{webRequest.downloadHandler.text}");
-                    jsonString = webRequest.downloadHandler.text;
+                    responseBytes = webRequest.downloadHandler.data;
+                    Logger.Info(Logger.CategoryType.Http, $"DownloadHandler length:{responseBytes?.Length ?? 0}");
                 }
-                
-                inRequestParams.InvokeResult(HttpResultType.Succeeded, jsonString);
 
                 webRequest.Dispose();
+                inRequestParams.InvokeResult(HttpResultType.Succeeded, responseBytes);
             }
         }
 

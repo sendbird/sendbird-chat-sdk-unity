@@ -37,14 +37,20 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
             internal Dictionary<string, string> MetaData { get; private set; }
 
             internal override void OnResponseAfterDeserialize(string inJsonString)
             {
-                MetaData = NewtonsoftJsonExtension.DeserializeObjectIgnoreException<Dictionary<string, string>>(inJsonString);
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                {
+                    reader.Read();
+                    MetaData = JsonStreamingHelper.ReadStringDictionary(reader);
+                }
             }
         }
     }

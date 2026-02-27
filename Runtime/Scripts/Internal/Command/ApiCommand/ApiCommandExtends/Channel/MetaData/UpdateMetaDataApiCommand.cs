@@ -40,11 +40,38 @@ namespace Sendbird.Chat
             }
         }
 
-        [Serializable]
         internal sealed class Response : ApiCommandAbstract.Response
         {
-            [JsonProperty("metadata")] internal Dictionary<string, string> metaData;
-            [JsonProperty("ts")] internal readonly long updatedAt;
+            internal Dictionary<string, string> metaData;
+            internal long updatedAt;
+
+            internal override void OnResponseAfterDeserialize(string inJsonString)
+            {
+                if (string.IsNullOrEmpty(inJsonString))
+                    return;
+
+                using (JsonTextReader reader = JsonStreamingPool.CreateReader(inJsonString))
+                {
+                    reader.Read();
+                    if (reader.TokenType != JsonToken.StartObject)
+                        return;
+
+                    while (reader.Read())
+                    {
+                        if (reader.TokenType == JsonToken.EndObject)
+                            break;
+
+                        string propName = reader.Value as string;
+                        reader.Read();
+                        switch (propName)
+                        {
+                            case "metadata": metaData = JsonStreamingHelper.ReadStringDictionary(reader); break;
+                            case "ts": updatedAt = JsonStreamingHelper.ReadLong(reader); break;
+                            default: JsonStreamingHelper.SkipValue(reader); break;
+                        }
+                    }
+                }
+            }
         }
     }
 }

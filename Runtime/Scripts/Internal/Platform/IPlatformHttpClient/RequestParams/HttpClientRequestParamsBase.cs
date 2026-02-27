@@ -9,7 +9,7 @@ namespace Sendbird.Chat
 {
     internal class HttpClientRequestParamsBase
     {
-        internal delegate void ResultHandler(HttpResultType inResultType, string inResponseOrError);
+        internal delegate void ResultHandler(HttpResultType inResultType, byte[] inResponseBytes);
         internal delegate void ProgressHandler(ulong inUploadedBytes, ulong inTotalBytes);
 
         internal string Url { get; private protected set; }
@@ -49,9 +49,9 @@ namespace Sendbird.Chat
             }
         }
 
-        internal void InvokeResult(HttpResultType inResultType, string inResponseOrError)
+        internal void InvokeResult(HttpResultType inResultType, byte[] inResponseBytes)
         {
-            _resultHandler?.Invoke(inResultType, inResponseOrError);
+            _resultHandler?.Invoke(inResultType, inResponseBytes);
         }
 
         internal void InvokeProgress(ulong inUploadedBytes, ulong inTotalBytes)
