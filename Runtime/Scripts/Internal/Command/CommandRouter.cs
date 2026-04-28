@@ -284,7 +284,6 @@ namespace Sendbird.Chat
             }
 
             requestParams.InsertCustomHeader(ConnectionHeaders.ACCEPT.Name, ConnectionHeaders.ACCEPT.Value);
-            requestParams.InsertCustomHeader(ConnectionHeaders.USER_AGENT.Name, ConnectionHeaders.USER_AGENT.Value);
             requestParams.InsertCustomHeader(ConnectionHeaders.SB_USER_AGENT.Name, ConnectionHeaders.SB_USER_AGENT.Value);
             requestParams.InsertCustomHeader(ConnectionHeaders.SB_SDK_USER_AGENT.Name, ConnectionHeaders.SB_SDK_USER_AGENT.Value);
             requestParams.InsertCustomHeader(ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Name, ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Value);
@@ -508,8 +507,6 @@ namespace Sendbird.Chat
                 
 #if UNITY_WEBGL
                 uriStringBuilder.Append($"&{ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Name}={ConnectionHeaders.REQUEST_SENT_TIMESTAMP.Value}");
-#else
-                uriStringBuilder.Append($"&{ConnectionHeaders.USER_AGENT.Name}={ConnectionHeaders.USER_AGENT.Value}");
 #endif
             }
 

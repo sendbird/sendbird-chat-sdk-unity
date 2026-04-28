@@ -33,7 +33,6 @@ namespace Sendbird.Chat
             }
         }
 
-        internal static readonly Header USER_AGENT = new Header("User-Agent", $"{SendbirdChatMainContext.PLATFORM_NAME.ToLower()}/{SendbirdChatMainContext.SDK_VERSION}");
         internal static readonly Header SB_USER_AGENT = new Header("SB-User-Agent", $"{SendbirdChatMainContext.PLATFORM_NAME.ToLower()}/c{SendbirdChatMainContext.SDK_VERSION}/o{SendbirdChatMainContext.OS_NAME.ToLower()}");
 
         internal static readonly Header SB_SDK_USER_AGENT = new Header("SB-SDK-User-Agent",
