@@ -1,5 +1,9 @@
 # Change Log
 
+## 4.2.1 (Apr 28, 2026)
+### Bug Fixes
+- Fixed connection failure on WebGL builds running in Safari and Firefox caused by CORS preflight rejection
+
 ## 4.2.0 (Feb 10, 2026)
 ### Improvements
 - Improved JSON deserialization performance and reduced memory allocations
